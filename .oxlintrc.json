@@ -4,6 +4,7 @@
     ".agents/**",
     ".claude/**",
     "internal-docs/**",
+    ".product-docs/**",
     "apps/**",
     "packages/**",
     "tests/**"

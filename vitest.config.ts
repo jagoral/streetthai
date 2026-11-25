@@ -1,7 +1,13 @@
 import { playwright } from "@vitest/browser-playwright";
 import { configDefaults, defineConfig } from "vitest/config";
 
-const exclude = [...configDefaults.exclude, ".agents/**", ".claude/**", "internal-docs/**"];
+const exclude = [
+  ...configDefaults.exclude,
+  ".agents/**",
+  ".claude/**",
+  "internal-docs/**",
+  ".product-docs/**",
+];
 
 export default defineConfig({
   test: {

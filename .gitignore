@@ -4,3 +4,5 @@ dist/
 *.tsbuildinfo
 .DS_Store
 .vitest/
+.env.local
+.product-docs/

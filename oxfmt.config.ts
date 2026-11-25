@@ -6,6 +6,7 @@ export default {
     ".agents/**",
     ".claude/**",
     "internal-docs/**",
+    ".product-docs/**",
     "**/*.md",
     "skills-lock.json",
     "pnpm-lock.yaml",
