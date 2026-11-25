@@ -1,11 +1,11 @@
 ---
 name: to-subtasks
-description: Break a Linear issue (or graduate its Fog) into tracer-bullet Linear sub-issues with native blockedBy edges in project ThaiStreet.
+description: Break a Linear issue (or graduate its Fog) into tracer-bullet Linear sub-issues with native blockedBy edges in project StreetThai.
 argument-hint: "[TOM-123 | Linear URL | empty]"
 disable-model-invocation: true
 ---
 
-Break a Linear issue that exceeds one fresh context window into **Linear sub-issues** under a parent issue in project **ThaiStreet** (`P-TOM-1`, team `TOM`). Linear is the single source of truth for all sub-issues, blockers, Fog, and decisions.
+Break a Linear issue that exceeds one fresh context window into **Linear sub-issues** under a parent issue in project **StreetThai** (`P-TOM-1`, team `TOM`). Linear is the single source of truth for all sub-issues, blockers, Fog, and decisions.
 
 ## 1. Load source, existing sub-issues & escape hatch
 

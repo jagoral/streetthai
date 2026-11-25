@@ -1,0 +1,32 @@
+{
+  "name": "streetthai",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "turbo run typecheck lint fmt:check test:node test:browser",
+    "fmt": "turbo run fmt && oxfmt . '!apps/**' '!packages/**' '!tests/**'",
+    "typecheck": "tsc --noEmit",
+    "lint": "oxlint --deny-warnings --disable-nested-config",
+    "fmt:check": "oxfmt --check . '!apps/**' '!packages/**' '!tests/**'",
+    "test:node": "vitest run --project node",
+    "test:browser": "vitest run --project browser",
+    "product:pull": "node --env-file-if-exists=.env.local tools/product-docs/pull.ts"
+  },
+  "devDependencies": {
+    "@streetthai/config": "workspace:*",
+    "@types/node": "catalog:",
+    "@vitest/browser-playwright": "catalog:",
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:",
+    "playwright": "catalog:",
+    "turbo": "catalog:",
+    "typescript": "catalog:",
+    "undici": "catalog:",
+    "vitest": "catalog:",
+    "zod": "catalog:"
+  },
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "packageManager": "pnpm@10.7.1"
+}

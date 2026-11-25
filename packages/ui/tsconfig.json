@@ -1,0 +1,4 @@
+{
+  "extends": "@streetthai/config/tsconfig.json",
+  "include": ["**/*.ts", "**/*.tsx"]
+}

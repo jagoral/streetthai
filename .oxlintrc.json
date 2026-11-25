@@ -1,0 +1,12 @@
+{
+  "extends": ["./node_modules/@streetthai/config/oxlintrc.json"],
+  "ignorePatterns": [
+    ".agents/**",
+    ".claude/**",
+    "internal-docs/**",
+    ".product-docs/**",
+    "apps/**",
+    "packages/**",
+    "tests/**"
+  ]
+}

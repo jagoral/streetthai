@@ -7,6 +7,8 @@ description: Writing conventions for team-facing documentation under internal-do
 
 Pages under `internal-docs/` and ADRs under `docs/adr/` are for engineers and agents working in this repo, never end users - plain GitHub-rendered Markdown where relative links and Mermaid diagrams work. Every paragraph must carry a concrete fact the reader acts on.
 
+The repo is public: business product docs (vision, pricing, distribution, legal/tax, schedule) live only as Linear documents in project StreetThai and are read through the generated `.product-docs/` mirror (`pnpm product:pull`), so never write or copy them into `internal-docs/`.
+
 ## Register
 
 1. **Open with the fact that matters most.** The first sentence of the page - and of every section - states the concrete decision, constraint, or result. Never open with background preamble.

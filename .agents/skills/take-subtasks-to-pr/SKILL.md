@@ -5,7 +5,7 @@ argument-hint: "[TOM-123 | TOM-123 \"PR 2\"]"
 disable-model-invocation: true
 ---
 
-Orchestrate implementation of a parent Linear issue (`TOM-<n>`) in project **ThaiStreet** (`P-TOM-1`) by running each unblocked unit (`TOM-<x>`) sequentially in a **fresh child agent** on one feature branch, recording handoffs in Linear comments, and opening the PR when the batch completes.
+Orchestrate implementation of a parent Linear issue (`TOM-<n>`) in project **StreetThai** (`P-TOM-1`) by running each unblocked unit (`TOM-<x>`) sequentially in a **fresh child agent** on one feature branch, recording handoffs in Linear comments, and opening the PR when the batch completes.
 
 An **active** unit is any sub-issue not in `Canceled` or `Duplicate` (`Done` and `In Review` count as active). Treat `Canceled` and `Duplicate` as resolved blockers and exclude them from batches and PR `Fixes` lines.
 
@@ -50,7 +50,7 @@ If the loop exits while any active unit is neither `In Review` nor `Done`, repor
 
 Once every active batch unit is `In Review` or `Done` (**final PR** = all other active sub-issues are `Done` or in already-shipped `[PR j]` groups, and `## Fog` is empty):
 
-1. Follow `.agents/skills/code-review/SKILL.md` (not the built-in `/code-review`) against `origin/<baseBranch>`, passing the parent `TOM-<n>` body and governing `internal-docs/product-vision/0[1-9]-*` chapter as the spec. Present findings; for accepted findings, spawn a fresh worker (same branch, fresh `baseSha`, unit = `TOM-<n>`, scope = accepted findings), verify commits + `pnpm check`, and post `Code review fixes (<base>..<head>)` on the parent (on `STOPPED`, post `STOPPED code-review: <reason>; base <baseSha>; stash "TOM-<n> partial"; findings: ...`).
+1. Follow `.agents/skills/code-review/SKILL.md` (not the built-in `/code-review`) against `origin/<baseBranch>`, passing the parent `TOM-<n>` body and governing product chapter (00-05 from the `.product-docs/` mirror, refreshed with `pnpm product:pull`; 06-09 from `internal-docs/product-vision/`) as the spec. Present findings; for accepted findings, spawn a fresh worker (same branch, fresh `baseSha`, unit = `TOM-<n>`, scope = accepted findings), verify commits + `pnpm check`, and post `Code review fixes (<base>..<head>)` on the parent (on `STOPPED`, post `STOPPED code-review: <reason>; base <baseSha>; stash "TOM-<n> partial"; findings: ...`).
 2. Run all existing applicable checks (`pnpm check`, `pnpm test:e2e` if flows changed, affected `pnpm verify:<area>`). Stop on failure.
 3. Push the branch (`--force-with-lease` if rebased). Reuse an existing open PR for the branch (retargeting to `baseBranch` via harness PR tool or GitHub REST PATCH if needed), or open a new PR targeting `baseBranch` (`link_pull_request` if available). Include `Fixes TOM-<x>` for each active unit (and `Fixes TOM-<n>` once on the final PR).
 4. Post `PR <k>: <url>, branch <name>` on the parent; move the parent to `In Review` only on the final PR.
