@@ -55,6 +55,14 @@ Each smell reads *what it is* → *how to fix*; match it against the diff:
 - **Middle Man**: a class or function that mostly just delegates onward. → cut it, call the real target direct.
 - **Refused Bequest**: a subclass or implementer that ignores or overrides most of what it inherits. → drop the inheritance, use composition.
 
+Error-handling smells (skip what `oxlint` already enforces):
+
+- **Per-handler error translation**: `try/catch` blocks in routes or UI callers translating domain or storage errors ad hoc instead of letting the single boundary translator handle them. → let the error propagate to the boundary translator.
+- **Raw error leak or hand-picked status**: serializing `error.cause`, stack traces, or driver messages to the wire, or hardcoding HTTP status codes instead of deriving them from the closed error-code table. → serialize only `{ error: { code, message, issues } }` and derive status from `code`.
+- **Pre-read for uniqueness**: querying before insert/update to detect duplicates instead of letting the storage/DB constraint arbitrate and translating the error at the adapter edge. → remove the pre-read and translate the constraint violation.
+- **Existence leak**: returning `forbidden` instead of `not-found` for a foreign-owned or unauthorized record. → raise the same `not-found` error as a missing record.
+- **UI coupling to `error.message`**: branching on or rendering raw server `error.message` prose in learner-facing UI instead of mapping `error.code` (and `issues`). → map `code` and `issues` to learner-facing copy.
+
 ### 4. Spawn both sub-agents in parallel
 
 Issue both sub-agent calls together, in the foreground, and aggregate the reports they return.

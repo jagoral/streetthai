@@ -5,6 +5,7 @@
   "exports": {
     "./tsconfig.json": "./tsconfig.base.json",
     "./oxlintrc.json": "./oxlintrc.json",
+    "./oxlint-plugin": "./oxlint-plugin.ts",
     "./oxfmtrc.json": "./oxfmtrc.json"
   },
   "scripts": {

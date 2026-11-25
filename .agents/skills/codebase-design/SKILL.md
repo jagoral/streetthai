@@ -94,6 +94,17 @@ Good interfaces make testing natural:
 
 3. **Small surface area.** Fewer methods = fewer tests needed. Fewer params = simpler test setup.
 
+## Error modes as part of the interface
+
+Error modes belong to a module's interface, not its internals:
+
+- **Dedicated domain error classes everywhere in `packages/*`.** Every expected failure mode — server-side and on-device (G2P, Allergy Card, Thailand Pass / Offline Allowance, offline sync) — is a named `Error` subclass that owns its plain-English message (and recovery hint where helpful). Business logic never formats caller-facing prose inline or picks HTTP status codes.
+- **One boundary translator, never per-handler `try/catch`.** Map domain errors to caller-facing errors in one central translator at each boundary (server HTTP boundary and on-device UI boundary). Anything unmapped is masked into an `internal` error whose `cause` stays attached for logs and never reaches the wire.
+- **Code-first wire contract.** Define caller-facing error codes as a closed `as const` union and derive the HTTP status table from it (`satisfies Record<ErrorCode, HttpStatus>`). Every HTTP error answers `{ error: { code, message, issues } }` (`issues` always an array), parsed by a Zod schema on the client into a dedicated client error class that rejects status/code contradictions.
+- **UI maps `code` (+ `issues`), not `message`.** `error.message` is plain spoken English for logs, debugging, and fallback; the PWA maps `error.code` and field `issues` to learner-facing copy.
+- **Non-leaking refusals.** Unauthorized or foreign-owner lookups raise the same `not-found` error as missing records — never confirm existence.
+- **Let constraints arbitrate at the adapter edge.** Don't pre-read to check uniqueness or concurrent state transitions; let storage/DB constraints arbitrate and translate driver errors into typed domain error classes before they leave the adapter package.
+
 ## Relationships
 
 - A **Module** has exactly one **Interface** (the surface it presents to callers and tests).
