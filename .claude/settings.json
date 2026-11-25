@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" || exit 0; nvm_sh=\"${NVM_DIR:-$HOME/.nvm}/nvm.sh\"; [ -s \"$nvm_sh\" ] && { . \"$nvm_sh\" && nvm use --silent; } >/dev/null 2>&1; pnpm -s product:pull --if-stale 2>/dev/null || echo 'warning: .product-docs/ not refreshed (needs Node 24 from .nvmrc), run pnpm product:pull'",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}
