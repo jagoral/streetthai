@@ -1,11 +1,11 @@
 ---
 name: to-linear-task
-description: Synthesize the current session context into a concise, seam-first Linear issue in project ThaiStreet (P-TOM-1, team TOM).
+description: Synthesize the current session context into a concise, seam-first Linear issue in project StreetThai (P-TOM-1, team TOM).
 argument-hint: "[label, priority, or extra context - or empty]"
 disable-model-invocation: true
 ---
 
-Turn the current session's settled discussion, spec, or investigation into one concise Linear issue in project **ThaiStreet** (`P-TOM-1`, team `TOM`).
+Turn the current session's settled discussion, spec, or investigation into one concise Linear issue in project **StreetThai** (`P-TOM-1`, team `TOM`).
 
 ## 1. Gather context
 

@@ -5,7 +5,7 @@ argument-hint: "[TOM-123 | TOM-123 \"PR 2\"]"
 disable-model-invocation: true
 ---
 
-Orchestrate implementation of a parent Linear issue (`TOM-<n>`) in project **ThaiStreet** (`P-TOM-1`) by running each unblocked unit (`TOM-<x>`) sequentially in a **fresh child agent** on one feature branch, recording handoffs in Linear comments, and opening the PR when the batch completes.
+Orchestrate implementation of a parent Linear issue (`TOM-<n>`) in project **StreetThai** (`P-TOM-1`) by running each unblocked unit (`TOM-<x>`) sequentially in a **fresh child agent** on one feature branch, recording handoffs in Linear comments, and opening the PR when the batch completes.
 
 An **active** unit is any sub-issue not in `Canceled` or `Duplicate` (`Done` and `In Review` count as active). Treat `Canceled` and `Duplicate` as resolved blockers and exclude them from batches and PR `Fixes` lines.
 

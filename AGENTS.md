@@ -11,7 +11,7 @@
 - **Runtime & commands:** `pnpm`, Node 24 LTS (`.nvmrc`); JDK 17+ for TLC (`[backlog: specs/tla/]`); Python + TLTK for the build-time G2P compiler (`[backlog: scripts/g2p/pyproject.toml]`). Before handoff run `pnpm check` (turbo runs `typecheck`, `lint`, and `fmt:check` in every workspace that defines them in parallel with the root Vitest `test:node` and `test:browser`; `lint:boundaries` `[backlog: .dependency-cruiser.cjs]` joins it later; CI runs it on every PR), `pnpm test:e2e` (`[backlog: script test:e2e]`) when flows change, and any affected `pnpm verify:<area>` (`[backlog: script verify:<area>]`).
 - **Product source of truth:** [`internal-docs/product-vision/README.md`](internal-docs/product-vision/README.md) and `internal-docs/product-vision/0[1-9]-*` (ignore archived `internal-docs/0[12]-*.md`). Chapter beats README; a newer ADR in `docs/adr/` (`[backlog: docs/adr/]`) beats a chapter; ask the owner when two chapters disagree.
 - **Domain language & ADRs:** use canonical terms from [`GLOSSARY.md`](GLOSSARY.md) and proactively correct the owner whenever they use an `_Avoid_` or conflicting term; record every design decision as a concise ADR in `docs/adr/` (`[backlog: docs/adr/]`) following `domain-modeling` and `internal-docs`.
-- **Issue tracker:** Linear project [ThaiStreet](https://linear.app/tomasz-goral/project/thaistreet-fab86ba18a16) (`P-TOM-1`, team `TOM`; Linear project name differs from codename). Read the relevant issue before starting work and keep its status updated.
+- **Issue tracker:** Linear project [StreetThai](https://linear.app/tomasz-goral/project/streetthai-fab86ba18a16) (`P-TOM-1`, team `TOM`). Read the relevant issue before starting work and keep its status updated.
 
 ## Kill-conditions & formal verification
 
@@ -90,6 +90,6 @@ Skill overrides (`.agents/skills/`):
 
 - `design-taste-frontend` - marketing routes under `apps/web/app/(marketing)/**` (`[backlog: apps/web/app/(marketing)/]`) only, never in-app PWA screens.
 - `break-ui` - include long Thai strings (imported from `src/content/fixtures/` `[backlog: src/content/fixtures/]` into a `*.test.tsx` browser test, never a route or toggle), stacked tone marks/diacritics, empty states, and 360px viewports.
-- `code-review` - fixed point `main` (or the stacked base branch), spec = the Linear issue in `ThaiStreet`, then its governing `internal-docs/product-vision/0[1-9]-*` chapter; run on the branch diff before handoff.
+- `code-review` - fixed point `main` (or the stacked base branch), spec = the Linear issue in `StreetThai`, then its governing `internal-docs/product-vision/0[1-9]-*` chapter; run on the branch diff before handoff.
 
 User-run commands (`disable-model-invocation: true`; suggest to the owner when relevant): `/add-rule`, `/no-comments`, `/grill-with-docs`, `/retro`, `/improve-codebase-architecture`, `/pick-ui-library`, `/to-linear-task`, `/to-subtasks`, `/take-subtasks-to-pr`.
