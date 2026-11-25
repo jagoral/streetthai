@@ -1,0 +1,17 @@
+{
+  "name": "@streetthai/config",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./tsconfig.json": "./tsconfig.base.json",
+    "./oxlintrc.json": "./oxlintrc.json",
+    "./oxfmtrc.json": "./oxfmtrc.json"
+  },
+  "scripts": {
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check"
+  },
+  "devDependencies": {
+    "oxfmt": "catalog:"
+  }
+}

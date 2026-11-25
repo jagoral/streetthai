@@ -1,0 +1,24 @@
+{
+  "name": "streetthai",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "turbo run typecheck lint fmt:check test:node",
+    "fmt": "turbo run fmt && oxfmt . '!apps/**' '!packages/**' '!tests/**'",
+    "typecheck": "tsc --noEmit",
+    "lint": "oxlint --deny-warnings --disable-nested-config",
+    "fmt:check": "oxfmt --check . '!apps/**' '!packages/**' '!tests/**'"
+  },
+  "devDependencies": {
+    "@streetthai/config": "workspace:*",
+    "@types/node": "catalog:",
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:",
+    "turbo": "catalog:",
+    "typescript": "catalog:"
+  },
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "packageManager": "pnpm@10.7.1"
+}

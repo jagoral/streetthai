@@ -1,0 +1,22 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "globalDependencies": ["oxfmt.config.ts", "packages/config/*.json"],
+  "tasks": {
+    "//#typecheck": {},
+    "//#lint": {},
+    "//#fmt:check": {},
+    "typecheck": {
+      "dependsOn": ["^typecheck"]
+    },
+    "lint": {},
+    "fmt:check": {},
+    "fmt": {
+      "cache": false
+    },
+    "test:node": {},
+    "test:browser": {},
+    "@streetthai/tests#test:node": {
+      "cache": false
+    }
+  }
+}

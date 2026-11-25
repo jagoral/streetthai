@@ -1,0 +1,11 @@
+packages:
+  - apps/*
+  - packages/*
+  - tests
+
+catalog:
+  "@types/node": 24.19.4
+  oxfmt: 0.80.0
+  oxlint: 1.95.0
+  turbo: 2.11.13
+  typescript: 7.0.2

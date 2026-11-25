@@ -1,0 +1,7 @@
+{
+  "extends": "@streetthai/config/tsconfig.json",
+  "compilerOptions": {
+    "types": ["node"]
+  },
+  "include": ["**/*.ts"]
+}
