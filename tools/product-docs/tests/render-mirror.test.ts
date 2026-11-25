@@ -2,6 +2,7 @@ import { expect, test } from "vitest";
 import { renderMirror } from "../render-mirror.ts";
 
 const overview = {
+  id: "doc-overview",
   title: "Product Vision 00 - Overview",
   slugId: "a1b2c3",
   url: "https://linear.app/acme/document/product-vision-00-overview-a1b2c3",
@@ -35,6 +36,7 @@ test("titles that slug to nothing, to the index name, or to a taken name get the
 
 test("README.md indexes every document by title and says the folder is generated", () => {
   const archive = {
+    id: "doc-archive",
     title: "Archive (v13) - Lean Business Plan & MVP PRD",
     slugId: "d4e5f6",
     url: "https://linear.app/acme/document/archive-d4e5f6",

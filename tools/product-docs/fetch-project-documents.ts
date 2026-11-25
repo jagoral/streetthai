@@ -1,4 +1,10 @@
-import { parseDocumentsResponse, type ProductDoc } from "./linear-documents.parse.ts";
+import {
+  parseDocumentMetadataResponse,
+  parseDocumentsResponse,
+  type DocumentMeta,
+  type DocumentsPageResult,
+  type ProductDoc,
+} from "./linear-documents.parse.ts";
 
 export type Fetch = (url: string, init: RequestInit) => Promise<Response>;
 
@@ -10,10 +16,28 @@ export type FetchProjectDocumentsOptions = {
 
 export const linearGraphqlUrl = "https://api.linear.app/graphql";
 
-export async function fetchProjectDocuments(
+export function fetchProjectDocuments(
   options: FetchProjectDocumentsOptions,
 ): Promise<ProductDoc[]> {
-  const docs: ProductDoc[] = [];
+  return fetchAllPages(
+    options,
+    documentsQuery("id title slugId url updatedAt content"),
+    parseDocumentsResponse,
+  );
+}
+
+export function fetchProjectDocumentMetadata(
+  options: FetchProjectDocumentsOptions,
+): Promise<DocumentMeta[]> {
+  return fetchAllPages(options, documentsQuery("id updatedAt"), parseDocumentMetadataResponse);
+}
+
+async function fetchAllPages<Node>(
+  options: FetchProjectDocumentsOptions,
+  query: string,
+  parse: (text: string) => DocumentsPageResult<Node>,
+): Promise<Node[]> {
+  const nodes: Node[] = [];
   let after: string | null = null;
   for (;;) {
     const response = await options.fetch(linearGraphqlUrl, {
@@ -21,25 +45,27 @@ export async function fetchProjectDocuments(
       headers: { "Content-Type": "application/json", Authorization: options.apiKey },
       body: JSON.stringify({ query, variables: { projectId: options.projectId, after } }),
     });
-    const result = parseDocumentsResponse(await response.text());
+    const result = parse(await response.text());
     if (!result.ok) {
       throw new Error(`Linear API error (HTTP ${response.status}): ${result.messages.join("; ")}`);
     }
-    docs.push(...result.page.nodes);
+    nodes.push(...result.page.nodes);
     if (!result.page.pageInfo.hasNextPage || result.page.pageInfo.endCursor === null) {
-      return docs;
+      return nodes;
     }
     after = result.page.pageInfo.endCursor;
   }
 }
 
-const query = `
+function documentsQuery(fields: string): string {
+  return `
   query ProjectDocuments($projectId: String!, $after: String) {
     project(id: $projectId) {
       documents(first: 50, after: $after) {
-        nodes { title slugId url updatedAt content }
+        nodes { ${fields} }
         pageInfo { hasNextPage endCursor }
       }
     }
   }
 `;
+}

@@ -3,6 +3,7 @@ import { fetchProjectDocuments } from "../fetch-project-documents.ts";
 
 const doc = (title: string) => ({
   title,
+  id: `id-${title.toLowerCase()}`,
   slugId: title.toLowerCase(),
   url: `https://linear.app/acme/document/${title.toLowerCase()}`,
   updatedAt: "2026-11-10T09:00:00.000Z",
