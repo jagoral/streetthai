@@ -1,0 +1,93 @@
+# StreetThai (`thai-app`)
+
+**Status:** Pre-scaffold (`[enforced-by: package.json]`).
+
+**Tag protocol:**
+- `[backlog: <target>]` = must land before the feature code it governs; drop the tag once `<target>` exists and keep the rule.
+- `[enforced-by: <target>]` = fully enforced by `<target>`; drop each tag as it lands and delete the rule when its last tag is gone.
+- `<target>` is a repo path, `script <name>`, or `<file> rule <name>` (`<placeholder>` matches one segment); a tag covers every path in its bullet, paragraph, table row, or indented layout children.
+
+## Context
+
+- **Stack:** Single Next.js PWA (TypeScript on Vercel EU), Vercel AI SDK, build-time compiled Thai G2P Trie, TanStack DB + RxDB + Dexie + Supabase Replication, Paddle.js + RevenueCat.
+- **Runtime & commands (`[backlog: package.json]`):** `pnpm`, Node 24 LTS; JDK 17+ for TLC (`[backlog: specs/tla/]`); Python + TLTK for the build-time G2P compiler (`[backlog: scripts/g2p/pyproject.toml]`). Before handoff run `pnpm check` (`typecheck`, `lint`, `fmt:check`, `lint:boundaries`, `test:node`, `test:browser`), `pnpm test:e2e` when flows change, and any affected `pnpm verify:<area>`.
+- **Product source of truth:** [`internal-docs/product-vision/README.md`](internal-docs/product-vision/README.md) and `internal-docs/product-vision/0[1-9]-*` (ignore archived `internal-docs/0[12]-*.md`). Chapter beats README; a newer ADR in `docs/adr/` (`[backlog: docs/adr/]`) beats a chapter; ask the owner when two chapters disagree.
+- **Domain language & ADRs:** use canonical terms from [`GLOSSARY.md`](GLOSSARY.md) and proactively correct the owner whenever they use an `_Avoid_` or conflicting term; record every design decision as a concise ADR in `docs/adr/` (`[backlog: docs/adr/]`) following `domain-modeling` and `internal-docs`.
+- **Issue tracker:** Linear project [ThaiStreet](https://linear.app/tomasz-goral/project/thaistreet-fab86ba18a16) (`P-TOM-1`, team `TOM`; Linear project name differs from codename). Read the relevant issue before starting work and keep its status updated.
+
+## Kill-conditions & formal verification
+
+Load `formal-verify` whenever creating or modifying code behind any row below:
+
+| Invariant | Harm prevented | Verification method | Command |
+| :--- | :--- | :--- | :--- |
+| Allergy & dietary Thai text is exact and intact | Mistranslated or truncated **Allergy Cards** can cause physical harm | Exhaustive catalog + serialization invariant test | `pnpm verify:allergy` `[backlog: script verify:allergy]` |
+| Offline writes persist and replicate deterministically | Silent data loss or corruption at zero-signal street stalls | TLA+ model (RxDB/Dexie/Supabase outbox & reconnect); browser IndexedDB sync tests run in the Vitest `browser` project | `pnpm verify:sync` `[backlog: script verify:sync]` |
+| 90-Day Thailand Pass never auto-renews or miscomputes expiry | Double-charging or wrong offline access cutoff | TLA+ state-machine check (purchase, activation, extension stacking, expiry, Offline Allowance) | `pnpm verify:entitlements` `[backlog: script verify:entitlements]` |
+| Thai tones, Sound Spelling, Step-0 normalization, numeral verbalizer, and polite particles (`kráp`/`kâ`/`ká`) stay exact | Silent pedagogical or price-reading regressions | `fast-check` property tests + golden corpus against real G2P entry points | `pnpm verify:g2p` `[backlog: script verify:g2p]` |
+
+## Thai content provenance
+
+- `[enforced-by: tools/oxlint/rules/thai-literals.ts]` Thai Unicode literals live only in `src/content/**`, `src/packages/*/lib/data/**`, `src/packages/nlp/lib/prompts/**`, `src/**/tests/**`, `src/**/*.test.{ts,tsx}`, and `e2e/**`; keep Thai lexical tables (numerals, acronyms, currency markers) in `lib/data/`.
+- `[enforced-by: .dependency-cruiser.cjs rule inferred-thai-render-path]` Render Inferred Thai only through the `InferredThai` render path (Beta Tone Card UI, `internal-docs/product-vision/09-*`).
+
+## Layout & test routing
+
+```text
+src/
+  app/                # [backlog: src/app/] Next.js routes & layouts (composition root)
+  components/         # [backlog: src/components/] Shared UI components
+  content/            # [backlog: src/content/] Audited Thai, Sound Spelling, allergy data, and fixtures/
+  tests/              # [backlog: src/tests/] Repo-level tests (AGENTS.md freshness, tooling-config)
+  packages/<name>/    # [backlog: src/packages/] Deep domain modules
+    index.ts          # Public entry point (any root file in a package is public)
+    lib/              # Private implementation (data/, parse/)
+    tests/            # Package tests & fixtures (private)
+e2e/                  # [backlog: e2e/] Playwright Test flow specs
+specs/tla/            # [backlog: specs/tla/] TLA+ models
+scripts/g2p/          # [backlog: scripts/g2p/] Build-time Python/TLTK G2P Trie compiler
+tools/oxlint/         # [backlog: tools/oxlint/] Custom repo-local lint plugins
+```
+
+- **Deep-module boundaries (`[enforced-by: .dependency-cruiser.cjs rule deep-module-boundaries]` + `[enforced-by: .dependency-cruiser.cjs rule fixtures-test-only]` + `[enforced-by: .dependency-cruiser.cjs rule no-circular]`):** `lib/` imports freely within its package; external code and `tests/` import only root entry files; package tests live only in `src/packages/<name>/tests/`; only tests import `src/content/fixtures/`; zero cycles.
+- **Property-test entry points:** expose domain operations (such as `syllabify`, `deriveTone`) on a package entry point when property tests need them.
+- **`*.test.ts` (excluding `*.browser.test.ts` and `*.verify.test.ts`) -> Vitest `node` project (`[enforced-by: src/tests/tooling-config.test.ts]` + `[enforced-by: tools/vitest/suite-budget-reporter.ts]`):** pure domain logic, G2P, `fast-check` with a fixed `seed`, and fast invariant tests; CI suite total `< 5s` (enforced at suite level, never as a per-test timeout).
+- **`*.verify.test.ts` -> Vitest `verify` project (`[enforced-by: src/tests/tooling-config.test.ts]` + `[enforced-by: .github/workflows/verify.yml]`):** invoked only via `pnpm verify:<area>` where `<area>` is the filename prefix (e.g. `allergy.verify.test.ts`), run in CI on changes to covered paths.
+- **`*.test.tsx` and `*.browser.test.ts` -> Vitest `browser` project (`[enforced-by: src/tests/tooling-config.test.ts]` + `[enforced-by: tools/vitest/suite-budget-reporter.ts]`):** Playwright Chromium headless with `timezoneId: "UTC"`, `locale: "en-US"`, `reducedMotion: "reduce"`, and a fixed clock via a `setClock` browser command (`page.clock`) for UI and real IndexedDB/Dexie/RxDB (never `jsdom` or `happy-dom`); CI suite total `< 30s`.
+- **`e2e/*.spec.ts` -> Playwright Test (`[enforced-by: src/tests/tooling-config.test.ts]`):** same context options as `browser`; CI suite total `< 60s` (`globalTimeout: 60_000`).
+
+## Checks awaiting tooling
+
+- **Zero flakiness (`[enforced-by: src/tests/tooling-config.test.ts]`):** keep `retry: 0` (Vitest), `retries: 0` and `forbidOnly: true` (Playwright), and ban `.only`, `.skip`, `.todo`, and `page.waitForTimeout` in `.oxlintrc.json`.
+- **Zero network in tests (`[enforced-by: src/tests/tooling-config.test.ts]`):** fail any request to a non-localhost origin in Vitest and Playwright; inject fake AI, sync, and payment adapters.
+- **Zero module mocking (`[enforced-by: tools/oxlint/rules/no-vi-mock.ts]`):** ban `vi.mock`, `vi.doMock`, `vi.importMock`, `vi.spyOn`, `vi.stubGlobal`, `vi.stubEnv`, `vi.useFakeTimers`, and `vi.setSystemTime`; pass fakes and adapters through function parameters.
+- **No ambient nondeterminism (`[enforced-by: tools/oxlint/rules/no-ambient-nondeterminism.ts]`):** ban `Date.now`, `Date()`, `new Date()`, `performance.now`, `Temporal.Now`, `Math.random`, `crypto.randomUUID`, and `crypto.getRandomValues` in `src/packages/**` and `src/components/**`; inject clocks and ID generators from `src/app/**`.
+- **Strict typing (`[enforced-by: src/tests/tooling-config.test.ts]` + `[enforced-by: tools/oxlint/rules/strict-typing.ts]`):** `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`; ban `any`; accept `unknown` only in input parsers (`src/packages/*/lib/parse/**` or `*.parse.ts`, narrowed with Zod) and `catch` clauses; write no `as` casts or non-null assertions (`x!`), except `as const` or an unavoidable `as` directly below `// SAFETY: <invariant>`.
+- **Zero explanatory comments (`[enforced-by: tools/oxlint/rules/no-explanatory-comments.ts]`):** exempt generated files (`next-env.d.ts`); ban lint and TS suppressions (`oxlint-disable`, `@ts-ignore`, `@ts-expect-error`, `@ts-nocheck`); keep only legal headers, public-API doc comments, `// PLATFORM: <link or dep@version>`, `// SAFETY:`, and `// SHORTCUT: <ceiling>; <upgrade trigger>` (`PLATFORM`, `SAFETY`, and `SHORTCUT`: max 2 lines each; replace `TODO`/`FIXME` with `SHORTCUT:` or delete).
+- **Public API first (`[enforced-by: tools/oxlint/rules/member-order.ts]`):** exports before non-exported declarations (except non-exported `const`, `let`, or `class` declarations an exported initializer reads at module load); class members public, protected, private.
+- **E2E flow budget (`[enforced-by: tools/oxlint/rules/e2e-flow-budget.ts]`):** name each spec `e2e/<flow>.spec.ts` with `<flow>` from the rule's allowlist (`internal-docs/product-vision/07-*` sections 1-4 plus `internal-docs/product-vision/05-*` F3 Capture) and max 1 `page.goto` per spec.
+- **`AGENTS.md` freshness (`[enforced-by: src/tests/agents-md.test.ts]`):** fail if any `[backlog: <target>]` or `[enforced-by: <target>]` target already exists while its tag remains, if any untagged path/glob, `pnpm <script>`, or skill referenced here is missing, or if any `disable-model-invocation: true` skill in `.agents/skills/` is unlisted.
+
+## Unautomatable rules
+
+- **Curated Thai provenance:** source hand-written learner-facing Thai, Sound Spelling, and allergy copy from `src/content/` (`[backlog: src/content/]`) only; flag missing curated phrases to the owner instead of authoring or machine-translating them.
+- **Flaky test resolution:** fix root causes or refactor onto deterministic parameters/adapters, and replace an unfixable test with a deterministic one covering the same behavior (delete coverage only with owner approval), instead of inflating timeouts.
+- **Property test regressions:** commit every failing `fast-check` seed and counterexample path as a fixed regression test in the Vitest `node` project.
+- **Literal unions:** derive literal unions from their typed source of truth instead of retyping them by hand.
+- **Never weaken a check:** fix the code instead of loosening `oxlint`, TypeScript, `dependency-cruiser`, Vitest, or Playwright config or deleting tests (except as **Flaky test resolution** allows).
+
+## Interrupt order
+
+Flaky test > red check (any `pnpm check`, `pnpm test:e2e`, or `pnpm verify:*` failure) > requested task. (`[backlog: package.json]`)
+
+When a higher-priority failure surfaces outside your current task, stop, report it to the owner, and fix it as a separate change before resuming the task.
+
+## Skills
+
+Skill overrides (`.agents/skills/`):
+
+- `design-taste-frontend` - marketing routes under `src/app/(marketing)/**` (`[backlog: src/app/(marketing)/]`) only, never in-app PWA screens.
+- `break-ui` - include long Thai strings (imported from `src/content/fixtures/` `[backlog: src/content/fixtures/]` into a `*.test.tsx` browser test, never a route or toggle), stacked tone marks/diacritics, empty states, and 360px viewports.
+- `code-review` - fixed point `main` (or the stacked base branch), spec = the Linear issue in `ThaiStreet`, then its governing `internal-docs/product-vision/0[1-9]-*` chapter; run on the branch diff before handoff.
+
+User-run commands (`disable-model-invocation: true`; suggest to the owner when relevant): `/add-rule`, `/no-comments`, `/grill-with-docs`, `/retro`, `/improve-codebase-architecture`, `/pick-ui-library`, `/to-linear-task`, `/to-subtasks`, `/take-subtasks-to-pr`.
