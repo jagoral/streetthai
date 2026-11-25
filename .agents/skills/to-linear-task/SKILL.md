@@ -9,7 +9,7 @@ Turn the current session's settled discussion, spec, or investigation into one c
 
 ## 1. Gather context
 
-- Inspect the codebase, `GLOSSARY.md`, and the governing `internal-docs/product-vision/0[1-9]-*` chapter and any newer ADR in `docs/adr/` so every term, seam, module name, and constraint matches reality.
+- Inspect the codebase, `GLOSSARY.md`, and the governing product chapter (00-05 from the `.product-docs/` mirror, refreshed with `pnpm product:pull`; 06-09 from `internal-docs/product-vision/`) and any newer ADR in `docs/adr/` so every term, seam, module name, and constraint matches reality.
 - Do not re-interview the user for decisions already settled in this session. Ask concisely only for what is genuinely missing: label (`Feature`, `Improvement`, or `Bug`), priority (`1` Urgent .. `4` Low), unresolved scope boundaries, or blocking open questions.
 - Check for related or duplicate issues with `list_issues(project: "P-TOM-1", query: "<keywords>")`.
 
