@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { existsSync, globSync, readFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
-import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { test } from "vitest";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 const configPackageDir = join(repoRoot, "packages/config");
@@ -58,7 +58,7 @@ test("every workspace extends the shared config without redefining the strict op
 
 test("every workspace exposes the typecheck, lint and fmt:check tasks that pnpm check runs", () => {
   const rootScripts = asRecord(readJson(join(repoRoot, "package.json"))["scripts"]);
-  assert.equal(rootScripts["check"], "turbo run typecheck lint fmt:check test:node");
+  assert.equal(rootScripts["check"], "turbo run typecheck lint fmt:check test:node test:browser");
 
   for (const dir of [repoRoot, ...listWorkspaces()]) {
     const scripts = asRecord(readJson(join(dir, "package.json"))["scripts"]);

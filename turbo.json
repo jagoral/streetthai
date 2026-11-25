@@ -13,9 +13,10 @@
     "fmt": {
       "cache": false
     },
-    "test:node": {},
-    "test:browser": {},
-    "@streetthai/tests#test:node": {
+    "//#test:node": {
+      "cache": false
+    },
+    "//#test:browser": {
       "cache": false
     }
   }

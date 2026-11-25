@@ -1,12 +1,23 @@
 {
   "$schema": "../../node_modules/oxlint/configuration_schema.json",
-  "plugins": ["typescript", "unicorn", "oxc", "import"],
+  "plugins": ["typescript", "unicorn", "oxc", "import", "vitest"],
   "categories": {
     "correctness": "error",
     "suspicious": "error"
   },
   "rules": {
     "typescript/no-explicit-any": "error",
-    "typescript/no-non-null-assertion": "error"
+    "typescript/no-non-null-assertion": "error",
+    "vitest/no-focused-tests": "error",
+    "vitest/no-disabled-tests": "error",
+    "vitest/warn-todo": "error",
+    "eslint/no-restricted-properties": [
+      "error",
+      {
+        "object": "page",
+        "property": "waitForTimeout",
+        "message": "Wait for a condition, never a fixed timeout."
+      }
+    ]
   }
 }
