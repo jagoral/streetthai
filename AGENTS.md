@@ -48,7 +48,7 @@ src/content/          # [backlog: src/content/] Audited Thai, Sound Spelling, al
 e2e/                  # [backlog: e2e/] Playwright Test flow specs
 specs/tla/            # [backlog: specs/tla/] TLA+ models
 scripts/g2p/          # [backlog: scripts/g2p/] Build-time Python/TLTK G2P Trie compiler
-tools/oxlint/         # [backlog: tools/oxlint/] Custom repo-local lint plugins
+tools/oxlint/         # Custom repo-local lint plugins
 ```
 
 - **Deep-module boundaries (`[enforced-by: .dependency-cruiser.cjs rule deep-module-boundaries]` + `[enforced-by: .dependency-cruiser.cjs rule fixtures-test-only]` + `[enforced-by: .dependency-cruiser.cjs rule no-circular]`):** `lib/` imports freely within its package; external code and `tests/` import only root entry files; package tests live only in `packages/<name>/tests/`; only tests import `src/content/fixtures/`; zero cycles.

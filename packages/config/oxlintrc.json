@@ -1,6 +1,7 @@
 {
   "$schema": "../../node_modules/oxlint/configuration_schema.json",
   "plugins": ["typescript", "unicorn", "oxc", "import", "vitest"],
+  "jsPlugins": ["@streetthai/config/oxlint-plugin"],
   "categories": {
     "correctness": "error",
     "suspicious": "error"
@@ -8,6 +9,12 @@
   "rules": {
     "typescript/no-explicit-any": "error",
     "typescript/no-non-null-assertion": "error",
+    "eslint/no-throw-literal": "error",
+    "eslint/prefer-promise-reject-errors": "error",
+    "eslint/preserve-caught-error": "error",
+    "unicorn/custom-error-definition": "error",
+    "unicorn/throw-new-error": "error",
+    "streetthai/no-bare-error": "error",
     "vitest/no-focused-tests": "error",
     "vitest/no-disabled-tests": "error",
     "vitest/warn-todo": "error",
@@ -19,5 +26,13 @@
         "message": "Wait for a condition, never a fixed timeout."
       }
     ]
-  }
+  },
+  "overrides": [
+    {
+      "files": ["**/*.test.ts", "**/*.test.tsx", "**/tests/**", "tests/**", "e2e/**", "tools/**"],
+      "rules": {
+        "streetthai/no-bare-error": "off"
+      }
+    }
+  ]
 }

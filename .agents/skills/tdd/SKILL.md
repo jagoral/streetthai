@@ -25,6 +25,12 @@ Ask: "What's the public interface, and which seams should we test?" Give each pr
 
 When the shape of that interface is itself in question (how deep the module is, where the seam belongs, what the interface should expose), call the Skill tool with "codebase-design" for the vocabulary. It is the shared source of the module, interface, depth, seam, adapter, leverage and locality terms, and it is a reference to consult, not a session to run.
 
+## Testing failure modes
+
+- **Test the failures the seam owns, not just the happy path.** Cover each dedicated domain error class at the seam by asserting the error class, `code`, and `issues` — never brittle prose matching.
+- **Plant constraint collisions, don't mock them.** For uniqueness or state-conflict errors, seed the conflicting row or state with a fixture helper and let the real storage/DB constraint fire and translate at the adapter edge.
+- **Pin wire error contracts with exhaustive fixtures.** Keep a typed `sampleErrors` map (`satisfies Record<ErrorCode, AppError>`) so every error code runs through the wire serializer and client parser — adding a code without a status or fixture fails `typecheck` and the contract test.
+
 ## Anti-patterns
 
 - **Implementation-coupled**: mocks internal collaborators, tests private methods, or verifies through a side channel (querying the database instead of using the interface). The tell: the test breaks when you refactor but behavior hasn't changed.

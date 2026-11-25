@@ -28,7 +28,7 @@ Before writing any `set` call, list the questions someone debugging this operati
 | What did AI or external calls do and cost? | AI and cost | `model`, `inputTokens`, `outputTokens`, `finishReason`, `llmDurationMs`, `costUsd` |
 | How good was the result? | Quality signals | `inferredThaiConfidence`, `soundSpellingFromCatalog: true`, `fallbackUsed: true` |
 | How long did each part take? | Timing | `durationMs` (automatic), `llmDurationMs`, `dbDurationMs` |
-| Did it fail? | Error | `error: true`, `errorName`, `errorMessage` (set only by `setError`) |
+| Did it fail? | Error | `error: true`, `errorCode`, `errorName`, `errorMessage`, `causeName`, `causeMessage` (set only by `setError`) |
 
 Not every event needs every row, but an operation that exits early without `skipped`/`exitReason`, or produces something without a count, is under-instrumented.
 
@@ -38,6 +38,8 @@ Not every event needs every row, but an operation that exits early without `skip
 - **Record the limit next to the hit.** A guardrail field without its threshold (`maxLength`, `retryAfterMs`, `entitlement`) cannot be tuned later.
 - **Record plan and actual side by side** whenever an operation decides how much to produce before producing it. The gap between them is the bug.
 - **Non-fatal failures are fields, not errors.** When a side step fails but the operation still succeeds (analytics, cost tracking, a thumbnail, cleanup), set a named field (`analyticsError: true`) and keep `error` unset. `error: true` means the operation itself failed.
+- **Log the masked boundary error and its `cause`, never leak `cause` on the wire.** When the boundary translator masks an unexpected failure into an `internal` error, pass the translated error to `evt.setError(error)` so the wide event records `errorCode: "internal"` alongside `causeName` and `causeMessage` (never raw user content), while the wire response omits `cause`.
+- **Expected domain refusals still carry `errorCode`.** Refusals like `invalid-input`, `not-found`, `conflict`, or `rate-limited` record `errorCode` (plus any guardrail or exit fields) so they are countable without looking like unhandled 500s.
 - **Booleans for "did it happen"**, counts for "how many", enums for "which one". Never stringify a count or a boolean.
 - **Add fields the moment they are known**, so an event that fails halfway still carries everything learned before the failure.
 - **Use `GLOSSARY.md` terms** in `op` names and fields (`learnerId`, not `userId`; `phraseCardId`, not `flashcardId`; `thailandPass`, not `subscription`).
