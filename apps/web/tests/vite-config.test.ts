@@ -57,12 +57,14 @@ test("the nested index.html workaround maps a/b/index.html to a/b under a PLATFO
   );
 });
 
-test("every prerendered route is declared in both Nitro routeRules and tanstackStart pages", () => {
-  expect(prerenderedRoutes).toContain("/");
-  expect(tanstackStartOptions.prerender).toEqual({ enabled: true, crawlLinks: false });
-  expect(tanstackStartOptions.pages.map(({ path }) => path)).toEqual([...prerenderedRoutes]);
-  expect(Object.keys(nitroOptions.routeRules)).toEqual([...prerenderedRoutes]);
-  for (const rule of Object.values(nitroOptions.routeRules)) {
-    expect(rule).toEqual({ prerender: true });
-  }
+test("/ and /settings are prerendered through both Nitro routeRules and tanstackStart pages", () => {
+  expect(prerenderedRoutes).toEqual(["/", "/settings"]);
+  expect(tanstackStartOptions).toEqual({
+    prerender: { enabled: true, crawlLinks: false },
+    pages: [{ path: "/" }, { path: "/settings" }],
+  });
+  expect(nitroOptions.routeRules).toEqual({
+    "/": { prerender: true },
+    "/settings": { prerender: true },
+  });
 });

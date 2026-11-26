@@ -1,17 +1,25 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { inflateSync } from "node:zlib";
 import { expect, test } from "vitest";
 import { pwaIcons, renderPwaIcon } from "../scripts/pwa-icons.ts";
 
 const publicDir = new URL("../public/", import.meta.url);
 
-test("the icon set covers Android, maskable and the 180px apple-touch-icon", () => {
-  expect(pwaIcons.map(({ file, size }) => [file, size])).toEqual([
-    ["pwa-192x192.png", 192],
-    ["pwa-512x512.png", 512],
-    ["maskable-512x512.png", 512],
-    ["apple-touch-icon.png", 180],
+test("public ships Android, maskable and the 180px apple-touch-icon PNGs at their sizes", () => {
+  const shipped = readdirSync(publicDir)
+    .filter((file) => file.endsWith(".png"))
+    .toSorted()
+    .map((file) => {
+      const png = readFileSync(new URL(file, publicDir));
+      return [file, png.readUInt32BE(16), png.readUInt32BE(20)];
+    });
+
+  expect(shipped).toEqual([
+    ["apple-touch-icon.png", 180, 180],
+    ["maskable-512x512.png", 512, 512],
+    ["pwa-192x192.png", 192, 192],
+    ["pwa-512x512.png", 512, 512],
   ]);
 });
 
