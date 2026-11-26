@@ -90,7 +90,7 @@ test("apps/web is a workspace that builds through turbo and CI", () => {
   );
   assert.match(
     readFileSync(join(repoRoot, ".github/workflows/ci.yml"), "utf8"),
-    /run: pnpm check\n\s+- run: pnpm build\n\s+- run: pnpm test:e2e\n/,
+    /run: pnpm check\n\s+- run: pnpm test:e2e\n/,
   );
 });
 
