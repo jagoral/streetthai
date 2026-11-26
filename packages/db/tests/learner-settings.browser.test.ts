@@ -1,6 +1,6 @@
 import { getRxStorageDexie } from "rxdb/plugins/storage-dexie";
 import { afterEach, beforeEach, expect, test } from "vitest";
-import { createDb, LEARNER_SETTINGS_ID } from "../index.ts";
+import { createDb, LEARNER_SETTINGS_ID, learnerSettingsSchema } from "../index.ts";
 
 const TEST_DB_NAME = "streetthai-learner-settings-reopen-test";
 
@@ -36,7 +36,7 @@ test("TOM-12 target: persists Learner settings across DB close and reopen", asyn
 
   try {
     await reopened.learnerSettings.preload();
-    expect(reopened.learnerSettings.get(LEARNER_SETTINGS_ID)).toEqual({
+    expect(learnerSettingsSchema.parse(reopened.learnerSettings.get(LEARNER_SETTINGS_ID))).toEqual({
       id: LEARNER_SETTINGS_ID,
       politeParticle: "ka",
     });

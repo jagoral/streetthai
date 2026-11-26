@@ -1,12 +1,10 @@
-import type { RxStorage } from "rxdb";
+import { getRxStorageMemory } from "rxdb/plugins/storage-memory";
 import { describe, expect, test } from "vitest";
 import {
   createDb,
-  DbNotImplementedError,
   LEARNER_SETTINGS_ID,
   learnerSettingsSchema,
   politeParticles,
-  type CreateDbOptions,
   type LearnerSettings,
 } from "../index.ts";
 import manifest from "../package.json" with { type: "json" };
@@ -51,20 +49,27 @@ describe("learnerSettingsSchema", () => {
 });
 
 describe("createDb contract", () => {
-  test("accepts an RxDB storage parameter and rejects with DbNotImplementedError on the stub", async () => {
-    const fakeStorage: RxStorage<unknown, unknown> = {
-      name: "fake-storage",
-      rxdbVersion: "17.6.0",
-      createStorageInstance() {
-        return Promise.reject(new Error("storage should not be invoked by stub"));
-      },
-    };
-    const options: CreateDbOptions<unknown, unknown> = {
-      storage: fakeStorage,
+  test("builds an RxDB-backed TanStack DB collection on the caller-provided storage", async () => {
+    const db = await createDb({
+      storage: getRxStorageMemory(),
       name: "streetthai-contract-test",
-    };
+    });
 
-    await expect(createDb(options)).rejects.toThrow(DbNotImplementedError);
+    try {
+      await db.learnerSettings.preload();
+      const writeTx = db.learnerSettings.insert({
+        id: LEARNER_SETTINGS_ID,
+        politeParticle: "krap",
+      });
+      await writeTx.when("settled");
+
+      expect(learnerSettingsSchema.parse(db.learnerSettings.get(LEARNER_SETTINGS_ID))).toEqual({
+        id: LEARNER_SETTINGS_ID,
+        politeParticle: "krap",
+      });
+    } finally {
+      await db.close();
+    }
   });
 
   test("exposes only the root entry point in package exports", () => {

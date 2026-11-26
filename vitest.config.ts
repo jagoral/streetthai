@@ -38,6 +38,9 @@ export default defineConfig({
             instances: [{ browser: "chromium" }],
           },
         },
+        optimizeDeps: {
+          entries: ["**/*.test.tsx", "**/*.browser.test.ts"],
+        },
         server: {
           headers: {
             "Content-Security-Policy":
