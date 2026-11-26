@@ -10,7 +10,7 @@ The Paste-to-FSRS decoder uses a strict 4-step pipeline so the LLM handles chat 
 
 **Primary Runtime Architecture (Single TypeScript Stack — Zero Fly.io Microservice):**
 - **Build-Time (Local / CI Python Script, Run Offline):** Uses `TLTK` + commercial-safe Thai wordlists + our TFL-authored 500-lemma expat core & 400 loanwords to compile a **static JSON / Trie pronunciation dictionary** (`15,000–25,000` Thai words → structured Sound Spelling syllables & tones, ~1–2 MB gzipped).
-- **Production Runtime (100% TypeScript on Vercel EU):** Next.js API routes run Step 0–3 directly in Node.js/TypeScript with sub-5ms Trie lookups — eliminating the Fly.io Python service (`-$15/mo`, one fewer US GDPR sub-processor/CFR, single monorepo).
+- **Production Runtime (100% TypeScript on Vercel EU):** TanStack Start server routes ([ADR-0001](../../docs/adr/0001-frontend-framework.md)) run Steps 0-3 directly in Node.js/TypeScript with sub-5ms Trie lookups, eliminating the Fly.io Python service (`-$15/mo`, one fewer US GDPR sub-processor/CFR, single monorepo).
 - **Gate-2 Fallback:** If Gate 2's 50-phrase spike shows `> 5%` OOV rate on real Thai chats, we activate the **Python FastAPI (`TLTK` + `PyThaiNLP 5.4.x`) on Fly.io EU (`+$15/mo`)** runtime fallback.
 
 ### Step 0 — TypeScript Thai Unicode Normalization + Elongation-Preserving Clamp + Offset Map

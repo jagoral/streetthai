@@ -7,10 +7,10 @@
 
 ## Context
 
-- **Stack:** Turborepo + pnpm workspace (`apps/*` deployables, `packages/*` shared and domain modules, root `tests/` repo-level tests); every workspace extends `@streetthai/config` (TypeScript, OXLint, OXfmt). One Next.js PWA in `apps/web/` (`[backlog: apps/web/]`, TypeScript on Vercel EU), Vercel AI SDK, build-time compiled Thai G2P Trie, TanStack DB + RxDB + Dexie + Supabase Replication, Paddle.js + RevenueCat.
+- **Stack:** Turborepo + pnpm workspace (`apps/*` deployables, `packages/*` shared and domain modules, root `tests/` repo-level tests); every workspace extends `@streetthai/config` (TypeScript, OXLint, OXfmt). One TanStack Start PWA ([ADR-0001](docs/adr/0001-frontend-framework.md)) in `apps/web/` (`[backlog: apps/web/]`, TypeScript on Vercel EU), Vercel AI SDK, build-time compiled Thai G2P Trie, TanStack DB + RxDB + Dexie + Supabase Replication, Paddle.js + RevenueCat.
 - **Runtime & commands:** `pnpm`, Node 24 LTS (`.nvmrc`); JDK 17+ for TLC (`[backlog: specs/tla/]`); Python + TLTK for the build-time G2P compiler (`[backlog: scripts/g2p/pyproject.toml]`). Before handoff run `pnpm check` (turbo runs `typecheck`, `lint`, and `fmt:check` in every workspace that defines them in parallel with the root Vitest `test:node` and `test:browser`; `lint:boundaries` `[backlog: .dependency-cruiser.cjs]` joins it later; CI runs it on every PR), `pnpm test:e2e` (`[backlog: script test:e2e]`) when flows change, and any affected `pnpm verify:<area>` (`[backlog: script verify:<area>]`). `pnpm product:pull` reads `LINEAR_API_KEY` (a Linear personal API key) from the environment or a local, gitignored `.env.local` you create at the repo root.
-- **Product source of truth:** business chapters 00-05 (`Product Vision 00 - Overview` through `Product Vision 05 - MVP Build Schedule & Validation Gates`) are Linear documents in project StreetThai, mirrored by `pnpm product:pull` into the generated, gitignored `.product-docs/` folder (index in its `README.md`); read the local mirror, which a SessionStart hook (`.claude/settings.json`) keeps fresh (1h cache, refetch on Linear change); `pnpm product:pull` forces a full refresh (agents without the hook run it manually). Technical chapters 06-09 live in `internal-docs/product-vision/0[6-9]-*`. Ignore the archived `Archive (v13) - *` drafts. A chapter beats the 00 Overview; a newer ADR in `docs/adr/` (`[backlog: docs/adr/]`) beats a chapter; ask the owner when two chapters disagree.
-- **Domain language & ADRs:** use canonical terms from [`GLOSSARY.md`](GLOSSARY.md) and proactively correct the owner whenever they use an `_Avoid_` or conflicting term; record every design decision as a concise ADR in `docs/adr/` (`[backlog: docs/adr/]`) following `domain-modeling` and `internal-docs`.
+- **Product source of truth:** business chapters 00-05 (`Product Vision 00 - Overview` through `Product Vision 05 - MVP Build Schedule & Validation Gates`) are Linear documents in project StreetThai, mirrored by `pnpm product:pull` into the generated, gitignored `.product-docs/` folder (index in its `README.md`); read the local mirror, which a SessionStart hook (`.claude/settings.json`) keeps fresh (1h cache, refetch on Linear change); `pnpm product:pull` forces a full refresh (agents without the hook run it manually). Technical chapters 06-09 live in `internal-docs/product-vision/0[6-9]-*`. Ignore the archived `Archive (v13) - *` drafts. A chapter beats the 00 Overview; a newer ADR in `docs/adr/` beats a chapter; ask the owner when two chapters disagree.
+- **Domain language & ADRs:** use canonical terms from [`GLOSSARY.md`](GLOSSARY.md) and proactively correct the owner whenever they use an `_Avoid_` or conflicting term; record every design decision as a concise ADR in `docs/adr/` following `domain-modeling` and `internal-docs`.
 - **Issue tracker:** Linear project [StreetThai](https://linear.app/tomasz-goral/project/streetthai-fab86ba18a16) (`P-TOM-1`, team `TOM`). Read the relevant issue before starting work and keep its status updated. Access Linear issues through the `linear` MCP server (which may be lazy-loaded via `call_mcp_tool`), not T3 Code's `list_issues`/`read_issue` tools (which target GitHub Issues).
 
 ## Kill-conditions & formal verification
@@ -33,9 +33,11 @@ Load `formal-verify` whenever creating or modifying code behind any row below:
 
 ```text
 apps/
-  web/                # [backlog: apps/web/] Next.js PWA
-    app/              # Next.js routes & layouts (composition root)
-    components/       # Shared UI components
+  web/                # [backlog: apps/web/] TanStack Start PWA
+    src/
+      router.tsx      # Router factory (composition root)
+      routes/         # TanStack Start file routes
+      components/     # Shared UI components
 packages/
   config/             # Shared tsconfig, OXLint, and OXfmt config (`@streetthai/config`)
   ui/                 # Design tokens and shared UI primitives (`@streetthai/ui`)
@@ -63,9 +65,9 @@ tools/oxlint/         # Custom repo-local lint plugins
 - **Zero flakiness:** keep `retry: 0` in `vitest.config.ts`, `retries: 0` and `forbidOnly: true` in Playwright (`[backlog: playwright.config.ts]`), and ban `.only`, `.skip`, `.todo`, and `page.waitForTimeout` in `packages/config/oxlintrc.json`.
 - **Zero network in tests:** fail any request to a non-localhost origin in Vitest (`tools/vitest/localhost-only-fetch.ts` for `node`, the CSP header in `vitest.config.ts` for `browser`) and Playwright (`[backlog: e2e/network-guard.ts]`); inject fake AI, sync, and payment adapters.
 - **Zero module mocking (`[enforced-by: tools/oxlint/rules/no-vi-mock.ts]`):** ban `vi.mock`, `vi.doMock`, `vi.importMock`, `vi.spyOn`, `vi.stubGlobal`, `vi.stubEnv`, `vi.useFakeTimers`, and `vi.setSystemTime`; pass fakes and adapters through function parameters.
-- **No ambient nondeterminism (`[enforced-by: tools/oxlint/rules/no-ambient-nondeterminism.ts]`):** ban `Date.now`, `Date()`, `new Date()`, `performance.now`, `Temporal.Now`, `Math.random`, `crypto.randomUUID`, and `crypto.getRandomValues` in `packages/**` and `apps/web/components/**`; inject clocks and ID generators from `apps/web/app/**`.
+- **No ambient nondeterminism (`[enforced-by: tools/oxlint/rules/no-ambient-nondeterminism.ts]`):** ban `Date.now`, `Date()`, `new Date()`, `performance.now`, `Temporal.Now`, `Math.random`, `crypto.randomUUID`, and `crypto.getRandomValues` in `packages/**` and `apps/web/src/components/**`; inject clocks and ID generators from the composition root `apps/web/src/router.tsx`.
 - **Strict typing (`[enforced-by: tools/oxlint/rules/strict-typing.ts]`):** keep `strict`, `noUncheckedIndexedAccess`, and `exactOptionalPropertyTypes` in `packages/config/tsconfig.base.json` and `any` and non-null assertions (`x!`) banned in `packages/config/oxlintrc.json`; accept `unknown` only in input parsers (`packages/*/lib/parse/**` or `*.parse.ts`, narrowed with Zod) and `catch` clauses; write no `as` casts, except `as const` or an unavoidable `as` directly below `// SAFETY: <invariant>`.
-- **Zero explanatory comments (`[enforced-by: tools/oxlint/rules/no-explanatory-comments.ts]`):** exempt generated files (`next-env.d.ts`); ban lint and TS suppressions (`oxlint-disable`, `@ts-ignore`, `@ts-expect-error`, `@ts-nocheck`); keep only legal headers, public-API doc comments, `// PLATFORM: <link or dep@version>`, `// SAFETY:`, and `// SHORTCUT: <ceiling>; <upgrade trigger>` (`PLATFORM`, `SAFETY`, and `SHORTCUT`: max 2 lines each; replace `TODO`/`FIXME` with `SHORTCUT:` or delete).
+- **Zero explanatory comments (`[enforced-by: tools/oxlint/rules/no-explanatory-comments.ts]`):** exempt generated files (`routeTree.gen.ts`); ban lint and TS suppressions (`oxlint-disable`, `@ts-ignore`, `@ts-expect-error`, `@ts-nocheck`); keep only legal headers, public-API doc comments, `// PLATFORM: <link or dep@version>`, `// SAFETY:`, and `// SHORTCUT: <ceiling>; <upgrade trigger>` (`PLATFORM`, `SAFETY`, and `SHORTCUT`: max 2 lines each; replace `TODO`/`FIXME` with `SHORTCUT:` or delete).
 - **Public API first (`[enforced-by: tools/oxlint/rules/member-order.ts]`):** exports before non-exported declarations (except non-exported `const`, `let`, or `class` declarations an exported initializer reads at module load); class members public, protected, private.
 - **E2E flow budget (`[enforced-by: tools/oxlint/rules/e2e-flow-budget.ts]`):** name each spec `e2e/<flow>.spec.ts` with `<flow>` from the rule's allowlist (`internal-docs/product-vision/07-*` sections 1-4 plus chapter 05 F3 Capture from `.product-docs/`) and max 1 `page.goto` per spec.
 - **`AGENTS.md` freshness (`[enforced-by: tests/agents-md.test.ts]`):** fail if any `[backlog: <target>]` or `[enforced-by: <target>]` target already exists while its tag remains, if any untagged path/glob, `pnpm <script>`, or skill referenced here is missing, or if any `disable-model-invocation: true` skill in `.agents/skills/` is unlisted.
@@ -88,7 +90,7 @@ When a higher-priority failure surfaces outside your current task, stop, report 
 
 Skill overrides (`.agents/skills/`):
 
-- `design-taste-frontend` - marketing routes under `apps/web/app/(marketing)/**` (`[backlog: apps/web/app/(marketing)/]`) only, never in-app PWA screens.
+- `design-taste-frontend` - marketing routes under `apps/web/src/routes/_marketing/**` (`[backlog: apps/web/src/routes/_marketing/]`) only, never in-app PWA screens.
 - `break-ui` - include long Thai strings (imported from `src/content/fixtures/` `[backlog: src/content/fixtures/]` into a `*.test.tsx` browser test, never a route or toggle), stacked tone marks/diacritics, empty states, and 360px viewports.
 - `code-review` - fixed point `main` (or the stacked base branch), spec = the Linear issue in `StreetThai`, then its governing chapter (00-05 from the generated `.product-docs/` mirror, 06-09 from `internal-docs/product-vision/`); run on the branch diff before handoff.
 
