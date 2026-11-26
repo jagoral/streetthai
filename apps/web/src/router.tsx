@@ -12,6 +12,7 @@ export function getRouter() {
   const context: RouterContext = {
     designTokensCss,
     db: createDbConnection({ loadStorage: loadDexieStorage }),
+    registerServiceWorker,
   };
   return createRouter({ routeTree, context, scrollRestoration: true });
 }
@@ -25,4 +26,8 @@ declare module "@tanstack/react-router" {
 const loadDexieStorage = createClientOnlyFn(async () => {
   const { getRxStorageDexie } = await import("rxdb/plugins/storage-dexie");
   return getRxStorageDexie();
+});
+
+const registerServiceWorker = createClientOnlyFn(() => {
+  void import("virtual:pwa-register").then(({ registerSW }) => registerSW({ immediate: true }));
 });

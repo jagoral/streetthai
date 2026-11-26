@@ -1,3 +1,4 @@
+import { designTokens } from "@streetthai/ui";
 import {
   HeadContent,
   Outlet,
@@ -5,12 +6,13 @@ import {
   createRootRouteWithContext,
   useHydrated,
 } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import type { DbConnection } from "../db/use-street-thai-db.ts";
 
 export type RouterContext = {
   designTokensCss: string;
   db: DbConnection;
+  registerServiceWorker: () => void;
 };
 
 export const Route = createRootRouteWithContext<RouterContext>()({
@@ -18,12 +20,17 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "theme-color", content: designTokens.color.accent },
       { title: "StreetThai" },
+    ],
+    links: [
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
     ],
     styles: [{ children: match.context.designTokensCss }],
   }),
   shellComponent: RootDocument,
-  component: Outlet,
+  component: RootComponent,
 });
 
 function RootDocument({ children }: { children: ReactNode }) {
@@ -39,4 +46,10 @@ function RootDocument({ children }: { children: ReactNode }) {
       </body>
     </html>
   );
+}
+
+function RootComponent() {
+  const { registerServiceWorker } = Route.useRouteContext();
+  useEffect(registerServiceWorker, [registerServiceWorker]);
+  return <Outlet />;
 }
