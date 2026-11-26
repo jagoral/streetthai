@@ -1,6 +1,7 @@
 import { designTokensCss } from "@streetthai/ui";
 import { createRouter } from "@tanstack/react-router";
 import { createClientOnlyFn } from "@tanstack/react-start";
+import { AppErrorView } from "./components/app-error-view.tsx";
 import { createDbConnection } from "./db/use-street-thai-db.ts";
 import { routeTree } from "./routeTree.gen.ts";
 import type { RouterContext } from "./routes/__root.tsx";
@@ -14,7 +15,12 @@ export function getRouter() {
     db: createDbConnection({ loadStorage: loadDexieStorage }),
     registerServiceWorker,
   };
-  return createRouter({ routeTree, context, scrollRestoration: true });
+  return createRouter({
+    routeTree,
+    context,
+    scrollRestoration: true,
+    defaultErrorComponent: AppErrorView,
+  });
 }
 
 declare module "@tanstack/react-router" {

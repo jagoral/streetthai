@@ -1,42 +1,34 @@
-import type { CreateDbOptions, StreetThaiDb } from "@streetthai/db";
-import { useEffect, useState } from "react";
-
-/** RxDB storage adapter the composition root hands to the client-only database. */
-export type DbStorage = CreateDbOptions<unknown, unknown>["storage"];
+import type { CreateDbOptions, PoliteParticle, StreetThaiDb } from "@streetthai/db";
+import { use } from "react";
 
 /** Options for a lazily opened, client-only StreetThai database. */
-export interface DbConnectionOptions {
+export interface DbConnectionOptions<TInternals, TInstanceCreationOptions> {
   /** Loads the RxDB storage adapter; called once, on the client, when the database first opens. */
-  readonly loadStorage: () => Promise<DbStorage>;
+  readonly loadStorage: () => Promise<
+    CreateDbOptions<TInternals, TInstanceCreationOptions>["storage"]
+  >;
   /** Database name isolating persisted data (defaults to the `@streetthai/db` default). */
   readonly name?: string;
 }
 
-/** The dynamically imported `@streetthai/db` entry, for its runtime constants. */
-export type StreetThaiDbModule = typeof import("@streetthai/db");
-
-/** An open StreetThai database together with the `@streetthai/db` entry that opened it. */
+/** An open StreetThai database together with the polite particles a Learner can choose from. */
 export interface OpenStreetThaiDb {
   /** The open database and its TanStack DB collections. */
   readonly db: StreetThaiDb;
-  /** The `@streetthai/db` entry, loaded on the client only. */
-  readonly module: StreetThaiDbModule;
+  /** Every polite particle a Learner can choose, in display order. */
+  readonly politeParticles: readonly PoliteParticle[];
 }
 
 /** Shared handle that opens the StreetThai database at most once per connection. */
 export interface DbConnection {
-  /** Opens the database on first call and returns the same instance afterwards. */
+  /** Opens the database on first call and returns the same promise afterwards. */
   open(): Promise<OpenStreetThaiDb>;
 }
 
-/** Loading state of the StreetThai database as seen by a component. */
-export type StreetThaiDbState =
-  | { readonly status: "loading" }
-  | ({ readonly status: "ready" } & OpenStreetThaiDb)
-  | { readonly status: "error"; readonly error: unknown };
-
 /** Creates a connection whose database (and `@streetthai/db` code) loads only when first opened. */
-export function createDbConnection(options: DbConnectionOptions): DbConnection {
+export function createDbConnection<TInternals, TInstanceCreationOptions>(
+  options: DbConnectionOptions<TInternals, TInstanceCreationOptions>,
+): DbConnection {
   let opening: Promise<OpenStreetThaiDb> | undefined;
   return {
     open() {
@@ -46,29 +38,17 @@ export function createDbConnection(options: DbConnectionOptions): DbConnection {
   };
 }
 
-/** Client hook that opens the connection's database after mount and tracks its loading state. */
-export function useStreetThaiDb(connection: DbConnection): StreetThaiDbState {
-  const [state, setState] = useState<StreetThaiDbState>({ status: "loading" });
-
-  useEffect(() => {
-    let active = true;
-    connection.open().then(
-      (opened) => {
-        if (active) setState({ status: "ready", ...opened });
-      },
-      (error: unknown) => {
-        if (active) setState({ status: "error", error });
-      },
-    );
-    return () => {
-      active = false;
-    };
-  }, [connection]);
-
-  return state;
+/**
+ * Client hook that suspends until the connection's database is open; a failure to open reaches
+ * the nearest error boundary.
+ */
+export function useStreetThaiDb(connection: DbConnection): OpenStreetThaiDb {
+  return use(connection.open());
 }
 
-async function openStreetThaiDb(options: DbConnectionOptions): Promise<OpenStreetThaiDb> {
+async function openStreetThaiDb<TInternals, TInstanceCreationOptions>(
+  options: DbConnectionOptions<TInternals, TInstanceCreationOptions>,
+): Promise<OpenStreetThaiDb> {
   if (import.meta.env.SSR) {
     throw new ClientOnlyDbError();
   }
@@ -78,7 +58,7 @@ async function openStreetThaiDb(options: DbConnectionOptions): Promise<OpenStree
     ...(options.name === undefined ? {} : { name: options.name }),
   });
   await db.learnerSettings.preload();
-  return { db, module };
+  return { db, politeParticles: module.politeParticles };
 }
 
 class ClientOnlyDbError extends Error {

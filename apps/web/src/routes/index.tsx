@@ -1,10 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { AppShell } from "../components/app-shell.tsx";
+import { APP_TAGLINE } from "../app-tagline.ts";
+import { AppShell, BodyText } from "../components/app-shell.tsx";
 
 export const Route = createFileRoute("/")({
   component: IndexPage,
 });
 
 function IndexPage() {
-  return <AppShell title="StreetThai">Speak Thai at the street stall, even offline.</AppShell>;
+  return (
+    <AppShell title="StreetThai">
+      <BodyText>{APP_TAGLINE}</BodyText>
+    </AppShell>
+  );
 }

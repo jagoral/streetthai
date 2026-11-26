@@ -4,6 +4,7 @@ import { TanStackNitroPWAPlugin } from "@vite-pwa/tanstack/vite/nitro";
 import viteReact from "@vitejs/plugin-react";
 import { nitro } from "nitro/vite";
 import { defineConfig } from "vite";
+import { APP_TAGLINE } from "./src/app-tagline.ts";
 
 /**
  * Routes prerendered to static HTML so the service worker can precache them as the offline shell.
@@ -35,7 +36,7 @@ export const pwaOptions = {
   manifest: {
     name: "StreetThai",
     short_name: "StreetThai",
-    description: "Speak Thai at the street stall, even offline.",
+    description: APP_TAGLINE,
     lang: "en",
     start_url: "/",
     scope: "/",

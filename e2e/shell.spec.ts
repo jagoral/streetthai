@@ -9,6 +9,20 @@ test("the index route renders the installable app shell after hydration", async 
   await expect(page.getByRole("heading", { level: 1, name: "StreetThai" })).toBeVisible();
   await expect(page.getByText("Speak Thai at the street stall, even offline.")).toBeVisible();
 
+  await expect(page.locator('meta[name="viewport"]')).toHaveAttribute(
+    "content",
+    "width=device-width, initial-scale=1, viewport-fit=cover",
+  );
+  expect(
+    await page.locator("html").evaluate((html) => {
+      const style = getComputedStyle(html);
+      return {
+        overscrollBehavior: style.overscrollBehaviorY,
+        tapHighlight: style.getPropertyValue("-webkit-tap-highlight-color"),
+      };
+    }),
+  ).toEqual({ overscrollBehavior: "none", tapHighlight: "rgba(0, 0, 0, 0)" });
+
   const appleTouchIcon = await page.locator('link[rel="apple-touch-icon"]').getAttribute("href");
   await expectSquarePng(page.request, appleTouchIcon, 180);
 

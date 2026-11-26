@@ -1,5 +1,5 @@
-import { LEARNER_SETTINGS_ID } from "@streetthai/db";
-import { createRoot, type Root } from "react-dom/client";
+import { Component, type ReactNode } from "react";
+import { createRoot } from "react-dom/client";
 import { getRxStorageDexie } from "rxdb/plugins/storage-dexie";
 import { afterEach, beforeEach, expect, test } from "vitest";
 import { page } from "vitest/browser";
@@ -8,7 +8,7 @@ import { createDbConnection, type DbConnection } from "../src/db/use-street-thai
 
 const TEST_DB_NAME = "streetthai-settings-view-test";
 
-const mounted: Array<{ root: Root; container: HTMLElement; connection: DbConnection }> = [];
+const unmounts: Array<() => Promise<void>> = [];
 
 beforeEach(async () => {
   await clearTestDatabases(TEST_DB_NAME);
@@ -19,60 +19,97 @@ afterEach(async () => {
   await clearTestDatabases(TEST_DB_NAME);
 });
 
-test("a polite-particle change updates the settings view without a reload", async () => {
-  const connection = mount();
-  const { db } = await connection.open();
+test("a polite particle saved elsewhere updates the settings view without a reload", async () => {
+  const connection = mountOnTestDb();
   const krap = page.getByRole("radio", { name: "krap" });
   const ka = page.getByRole("radio", { name: "ka" });
 
   await expect.element(krap).not.toBeChecked();
   await expect.element(ka).not.toBeChecked();
 
-  await db.learnerSettings
-    .insert({ id: LEARNER_SETTINGS_ID, politeParticle: "krap" })
-    .when("settled");
+  const { db } = await connection.open();
+  await db.savePoliteParticle("krap");
+
   await expect.element(krap).toBeChecked();
+  await expect.element(ka).not.toBeChecked();
+});
+
+test("a chosen polite particle is still selected after the database is closed and reopened", async () => {
+  mountOnTestDb();
+  const ka = page.getByRole("radio", { name: "ka" });
 
   await ka.click();
   await expect.element(ka).toBeChecked();
-  await expect.element(krap).not.toBeChecked();
-  await expect.element(page.getByRole("group", { name: "Polite particle" })).toBeEnabled();
-  expect(db.learnerSettings.get(LEARNER_SETTINGS_ID)?.politeParticle).toBe("ka");
-});
-
-test("a stored polite particle renders after the database is closed and reopened", async () => {
-  const first = mount();
-  const { db } = await first.open();
-  await db.learnerSettings
-    .insert({ id: LEARNER_SETTINGS_ID, politeParticle: "ka" })
-    .when("settled");
+  await expect
+    .element(page.getByRole("group", { name: "Polite particle" }))
+    .toHaveAttribute("aria-busy", "false");
   await unmountAll();
 
-  mount();
+  mountOnTestDb();
 
   await expect.element(page.getByRole("radio", { name: "ka" })).toBeChecked();
   await expect.element(page.getByRole("radio", { name: "krap" })).not.toBeChecked();
 });
 
-function mount(): DbConnection {
+test("a database that fails to open reaches the nearest error boundary", async () => {
+  const connection = createDbConnection({
+    loadStorage: () => Promise.reject(new Error("storage unavailable")),
+    name: TEST_DB_NAME,
+  });
+
+  mount(
+    <TestErrorBoundary>
+      <SettingsView connection={connection} />
+    </TestErrorBoundary>,
+    async () => undefined,
+  );
+
+  await expect.element(page.getByRole("alert")).toHaveTextContent("storage unavailable");
+});
+
+class TestErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
+  override state: { error: Error | null } = { error: null };
+
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+
+  override render() {
+    return this.state.error === null ? (
+      this.props.children
+    ) : (
+      <p role="alert">{this.state.error.message}</p>
+    );
+  }
+}
+
+function mountOnTestDb(): DbConnection {
   const connection = createDbConnection({
     loadStorage: async () => getRxStorageDexie(),
     name: TEST_DB_NAME,
   });
-  const container = document.createElement("div");
-  document.body.append(container);
-  const root = createRoot(container);
-  root.render(<SettingsView connection={connection} />);
-  mounted.push({ root, container, connection });
+  mount(<SettingsView connection={connection} />, async () => {
+    const { db } = await connection.open();
+    await db.close();
+  });
   return connection;
 }
 
-async function unmountAll(): Promise<void> {
-  for (const { root, container, connection } of mounted.splice(0)) {
+function mount(element: ReactNode, release: () => Promise<void>): void {
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  root.render(element);
+  unmounts.push(async () => {
     root.unmount();
     container.remove();
-    const { db } = await connection.open();
-    await db.close();
+    await release();
+  });
+}
+
+async function unmountAll(): Promise<void> {
+  for (const unmount of unmounts.splice(0)) {
+    await unmount();
   }
 }
 

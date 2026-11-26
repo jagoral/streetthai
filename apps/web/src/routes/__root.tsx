@@ -1,4 +1,4 @@
-import { designTokens } from "@streetthai/ui";
+import { designTokens, tokenVar } from "@streetthai/ui";
 import {
   HeadContent,
   Outlet,
@@ -19,7 +19,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   head: ({ match }) => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { name: "theme-color", content: designTokens.color.accent },
       { title: "StreetThai" },
     ],
@@ -27,7 +27,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
     ],
-    styles: [{ children: match.context.designTokensCss }],
+    styles: [{ children: match.context.designTokensCss }, { children: baseCss }],
   }),
   shellComponent: RootDocument,
   component: RootComponent,
@@ -53,3 +53,5 @@ function RootComponent() {
   useEffect(registerServiceWorker, [registerServiceWorker]);
   return <Outlet />;
 }
+
+const baseCss = `html,body{margin:0;background-color:${tokenVar("color", "surface")};overscroll-behavior:none;-webkit-tap-highlight-color:transparent}body{min-height:100dvh}`;
