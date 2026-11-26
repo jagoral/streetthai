@@ -1,7 +1,8 @@
 {
   "extends": "@streetthai/config/tsconfig.json",
   "compilerOptions": {
-    "types": ["node"]
+    "types": ["node"],
+    "lib": ["es2024", "dom", "dom.iterable"]
   },
-  "include": ["*.ts", "tools/**/*.ts"]
+  "include": ["*.ts", "tools/**/*.ts", "e2e/**/*.ts"]
 }

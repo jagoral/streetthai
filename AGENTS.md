@@ -7,8 +7,8 @@
 
 ## Context
 
-- **Stack:** Turborepo + pnpm workspace (`apps/*` deployables, `packages/*` shared and domain modules, root `tests/` repo-level tests); every workspace extends `@streetthai/config` (TypeScript, OXLint, OXfmt). One TanStack Start PWA ([ADR-0001](docs/adr/0001-frontend-framework.md)) in `apps/web/` (`[backlog: apps/web/]`, TypeScript on Vercel EU), Vercel AI SDK, build-time compiled Thai G2P Trie, TanStack DB + RxDB + Dexie + Supabase Replication, Paddle.js + RevenueCat.
-- **Runtime & commands:** `pnpm`, Node 24 LTS (`.nvmrc`); JDK 17+ for TLC (`[backlog: specs/tla/]`); Python + TLTK for the build-time G2P compiler (`[backlog: scripts/g2p/pyproject.toml]`). Before handoff run `pnpm check` (turbo runs `typecheck`, `lint`, and `fmt:check` in every workspace that defines them in parallel with the root Vitest `test:node` and `test:browser`; `lint:boundaries` `[backlog: .dependency-cruiser.cjs]` joins it later; CI runs it on every PR), `pnpm test:e2e` (`[backlog: script test:e2e]`) when flows change, and any affected `pnpm verify:<area>` (`[backlog: script verify:<area>]`). `pnpm product:pull` reads `LINEAR_API_KEY` (a Linear personal API key) from the environment or a local, gitignored `.env.local` you create at the repo root.
+- **Stack:** Turborepo + pnpm workspace (`apps/*` deployables, `packages/*` shared and domain modules, root `tests/` repo-level tests); every workspace extends `@streetthai/config` (TypeScript, OXLint, OXfmt). One TanStack Start PWA ([ADR-0001](docs/adr/0001-frontend-framework.md)) in `apps/web/` (TypeScript on Vercel EU), Vercel AI SDK, build-time compiled Thai G2P Trie, TanStack DB + RxDB + Dexie + Supabase Replication, Paddle.js + RevenueCat.
+- **Runtime & commands:** `pnpm`, Node 24 LTS (`.nvmrc`); JDK 17+ for TLC (`[backlog: specs/tla/]`); Python + TLTK for the build-time G2P compiler (`[backlog: scripts/g2p/pyproject.toml]`). Before handoff run `pnpm check` (turbo runs `typecheck`, `lint`, and `fmt:check` in every workspace that defines them in parallel with the root Vitest `test:node` and `test:browser`; `lint:boundaries` `[backlog: .dependency-cruiser.cjs]` joins it later; CI runs it on every PR), `pnpm test:e2e` when flows change, and any affected `pnpm verify:<area>` (`[backlog: script verify:<area>]`). `pnpm product:pull` reads `LINEAR_API_KEY` (a Linear personal API key) from the environment or a local, gitignored `.env.local` you create at the repo root.
 - **Product source of truth:** business chapters 00-05 (`Product Vision 00 - Overview` through `Product Vision 05 - MVP Build Schedule & Validation Gates`) are Linear documents in project StreetThai, mirrored by `pnpm product:pull` into the generated, gitignored `.product-docs/` folder (index in its `README.md`); read the local mirror, which a SessionStart hook (`.claude/settings.json`) keeps fresh (1h cache, refetch on Linear change); `pnpm product:pull` forces a full refresh (agents without the hook run it manually). Technical chapters 06-09 live in `internal-docs/product-vision/0[6-9]-*`. Ignore the archived `Archive (v13) - *` drafts. A chapter beats the 00 Overview; a newer ADR in `docs/adr/` beats a chapter; ask the owner when two chapters disagree.
 - **Domain language & ADRs:** use canonical terms from [`GLOSSARY.md`](GLOSSARY.md) and proactively correct the owner whenever they use an `_Avoid_` or conflicting term; record every design decision as a concise ADR in `docs/adr/` following `domain-modeling` and `internal-docs`.
 - **Issue tracker:** Linear project [StreetThai](https://linear.app/tomasz-goral/project/streetthai-fab86ba18a16) (`P-TOM-1`, team `TOM`). Read the relevant issue before starting work and keep its status updated. Access Linear issues through the `linear` MCP server (which may be lazy-loaded via `call_mcp_tool`), not T3 Code's `list_issues`/`read_issue` tools (which target GitHub Issues).
@@ -33,7 +33,7 @@ Load `formal-verify` whenever creating or modifying code behind any row below:
 
 ```text
 apps/
-  web/                # [backlog: apps/web/] TanStack Start PWA
+  web/                # TanStack Start PWA (`@streetthai/web`)
     src/
       router.tsx      # Router factory (composition root)
       routes/         # TanStack Start file routes
@@ -47,7 +47,7 @@ packages/
     tests/            # Package tests & fixtures (private)
 tests/                # Repo-level tests workspace (`@streetthai/tests`)
 src/content/          # [backlog: src/content/] Audited Thai, Sound Spelling, allergy data, and fixtures/
-e2e/                  # [backlog: e2e/] Playwright Test flow specs
+e2e/                  # Playwright Test flow specs and the `network-guard.ts` fixture
 specs/tla/            # [backlog: specs/tla/] TLA+ models
 scripts/g2p/          # [backlog: scripts/g2p/] Build-time Python/TLTK G2P Trie compiler
 tools/oxlint/         # Custom repo-local lint plugins
@@ -58,12 +58,12 @@ tools/oxlint/         # Custom repo-local lint plugins
 - **`*.test.ts` (excluding `*.browser.test.ts` and `*.verify.test.ts`) -> Vitest `node` project (`[enforced-by: tools/vitest/suite-budget-reporter.ts]`):** pure domain logic, G2P, `fast-check` with a fixed `seed`, and fast invariant tests; CI suite total `< 5s` (enforced at suite level, never as a per-test timeout).
 - **`*.verify.test.ts` -> Vitest `verify` project (`[backlog: script verify:<area>]` + `[enforced-by: .github/workflows/verify.yml]`):** invoked only via `pnpm verify:<area>` where `<area>` is the filename prefix (e.g. `allergy.verify.test.ts`), run in CI on changes to covered paths.
 - **`*.test.tsx` and `*.browser.test.ts` -> Vitest `browser` project (`[enforced-by: tools/vitest/suite-budget-reporter.ts]`):** Playwright Chromium headless with `timezoneId: "UTC"`, `locale: "en-US"`, `reducedMotion: "reduce"`, and a fixed clock via a `setClock` browser command (`page.clock`, `[backlog: tools/vitest/set-clock.ts]`) for UI and real IndexedDB/Dexie/RxDB (never `jsdom` or `happy-dom`); CI suite total `< 30s`.
-- **`e2e/*.spec.ts` -> Playwright Test (`[backlog: playwright.config.ts]`):** same context options as `browser`; CI suite total `< 60s` (`globalTimeout: 60_000`).
+- **`e2e/*.spec.ts` -> Playwright Test (`playwright.config.ts`):** same context options as `browser`; CI suite total `< 60s` (`globalTimeout: 60_000`).
 
 ## Checks awaiting tooling
 
-- **Zero flakiness:** keep `retry: 0` in `vitest.config.ts`, `retries: 0` and `forbidOnly: true` in Playwright (`[backlog: playwright.config.ts]`), and ban `.only`, `.skip`, `.todo`, and `page.waitForTimeout` in `packages/config/oxlintrc.json`.
-- **Zero network in tests:** fail any request to a non-localhost origin in Vitest (`tools/vitest/localhost-only-fetch.ts` for `node`, the CSP header in `vitest.config.ts` for `browser`) and Playwright (`[backlog: e2e/network-guard.ts]`); inject fake AI, sync, and payment adapters.
+- **Zero flakiness:** keep `retry: 0` in `vitest.config.ts`, `retries: 0` and `forbidOnly: true` in Playwright (`playwright.config.ts`), and ban `.only`, `.skip`, `.todo`, and `page.waitForTimeout` in `packages/config/oxlintrc.json`.
+- **Zero network in tests:** fail any request to a non-localhost origin in Vitest (`tools/vitest/localhost-only-fetch.ts` for `node`, the CSP header in `vitest.config.ts` for `browser`) and Playwright (`e2e/network-guard.ts`, imported by every spec instead of `@playwright/test`); inject fake AI, sync, and payment adapters.
 - **Zero module mocking (`[enforced-by: tools/oxlint/rules/no-vi-mock.ts]`):** ban `vi.mock`, `vi.doMock`, `vi.importMock`, `vi.spyOn`, `vi.stubGlobal`, `vi.stubEnv`, `vi.useFakeTimers`, and `vi.setSystemTime`; pass fakes and adapters through function parameters.
 - **No ambient nondeterminism (`[enforced-by: tools/oxlint/rules/no-ambient-nondeterminism.ts]`):** ban `Date.now`, `Date()`, `new Date()`, `performance.now`, `Temporal.Now`, `Math.random`, `crypto.randomUUID`, and `crypto.getRandomValues` in `packages/**` and `apps/web/src/components/**`; inject clocks and ID generators from the composition root `apps/web/src/router.tsx`.
 - **Strict typing (`[enforced-by: tools/oxlint/rules/strict-typing.ts]`):** keep `strict`, `noUncheckedIndexedAccess`, and `exactOptionalPropertyTypes` in `packages/config/tsconfig.base.json` and `any` and non-null assertions (`x!`) banned in `packages/config/oxlintrc.json`; accept `unknown` only in input parsers (`packages/*/lib/parse/**` or `*.parse.ts`, narrowed with Zod) and `catch` clauses; write no `as` casts, except `as const` or an unavoidable `as` directly below `// SAFETY: <invariant>`.
@@ -82,7 +82,7 @@ tools/oxlint/         # Custom repo-local lint plugins
 
 ## Interrupt order
 
-Flaky test > red check (any `pnpm check`, `pnpm test:e2e` `[backlog: script test:e2e]`, or `pnpm verify:*` `[backlog: script verify:<area>]` failure) > requested task.
+Flaky test > red check (any `pnpm check`, `pnpm test:e2e`, or `pnpm verify:*` `[backlog: script verify:<area>]` failure) > requested task.
 
 When a higher-priority failure surfaces outside your current task, stop, report it to the owner, and fix it as a separate change before resuming the task.
 

@@ -9,11 +9,16 @@
       "dependsOn": ["^typecheck"]
     },
     "lint": {},
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": [".output/**"]
+    },
     "fmt:check": {},
     "fmt": {
       "cache": false
     },
     "//#test:node": {
+      "dependsOn": ["@streetthai/web#build"],
       "cache": false
     },
     "//#test:browser": {

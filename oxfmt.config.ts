@@ -10,5 +10,6 @@ export default {
     "**/*.md",
     "skills-lock.json",
     "pnpm-lock.yaml",
+    "**/routeTree.gen.ts",
   ],
 };

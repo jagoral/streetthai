@@ -6,3 +6,8 @@ dist/
 .vitest/
 .env.local
 .product-docs/
+.output/
+.nitro/
+.tanstack/
+test-results/
+playwright-report/

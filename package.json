@@ -4,15 +4,18 @@
   "type": "module",
   "scripts": {
     "check": "turbo run typecheck lint fmt:check test:node test:browser",
+    "build": "turbo run build",
     "fmt": "turbo run fmt && oxfmt . '!apps/**' '!packages/**' '!tests/**'",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint --deny-warnings --disable-nested-config",
     "fmt:check": "oxfmt --check . '!apps/**' '!packages/**' '!tests/**'",
     "test:node": "vitest run --project node",
     "test:browser": "vitest run --project browser",
+    "test:e2e": "playwright test",
     "product:pull": "node --env-file-if-exists=.env.local tools/product-docs/pull.ts"
   },
   "devDependencies": {
+    "@playwright/test": "catalog:",
     "@streetthai/config": "workspace:*",
     "@types/node": "catalog:",
     "@vitest/browser-playwright": "catalog:",

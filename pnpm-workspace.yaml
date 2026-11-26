@@ -4,18 +4,31 @@ packages:
   - tests
 
 catalog:
+  "@playwright/test": 1.65.1
   "@tanstack/db": 1.0.0-rc.1.5
+  "@tanstack/react-router": 1.170.46
+  "@tanstack/react-start": 1.169.7
   "@tanstack/rxdb-db-collection": 1.0.0-rc.1.5
   "@types/node": 24.19.4
+  "@types/react": 19.3.3
+  "@types/react-dom": 19.3.0
+  "@unplugin-pwa/core": 0.0.8
+  "@vite-pwa/tanstack": 0.0.5
+  "@vitejs/plugin-react": 6.3.0
   "@vitest/browser-playwright": 5.1.2
   dexie: 4.4.7
+  magicast: 0.5.5
+  nitro: 3.0.261103-rc
   oxfmt: 0.80.0
   oxlint: 1.95.0
   playwright: 1.65.1
+  react: 19.3.1
+  react-dom: 19.3.1
   rxdb: 17.6.0
   rxjs: 7.8.2
   turbo: 2.11.13
   typescript: 7.0.2
   undici: 7.30.2
+  vite: 8.3.8
   vitest: 5.1.2
   zod: 4.6.7

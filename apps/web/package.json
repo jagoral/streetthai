@@ -1,0 +1,40 @@
+{
+  "name": "@streetthai/web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "pwa:icons": "node scripts/generate-pwa-icons.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "oxlint --deny-warnings",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check"
+  },
+  "dependencies": {
+    "@streetthai/db": "workspace:*",
+    "@streetthai/ui": "workspace:*",
+    "@tanstack/react-router": "catalog:",
+    "@tanstack/react-start": "catalog:",
+    "dexie": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "rxdb": "catalog:"
+  },
+  "devDependencies": {
+    "@streetthai/config": "workspace:*",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@unplugin-pwa/core": "catalog:",
+    "@vite-pwa/tanstack": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "magicast": "catalog:",
+    "nitro": "catalog:",
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  }
+}

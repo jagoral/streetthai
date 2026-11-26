@@ -73,6 +73,55 @@ test("every workspace exposes the typecheck, lint and fmt:check tasks that pnpm 
   }
 });
 
+test("apps/web is a workspace that builds through turbo and CI", () => {
+  const webDir = join(repoRoot, "apps/web");
+  assert.ok(listWorkspaces().includes(webDir), "apps/web workspace is missing");
+
+  const scripts = asRecord(readJson(join(webDir, "package.json"))["scripts"]);
+  for (const script of [...checkScripts, "fmt", "build"]) {
+    assert.equal(typeof scripts[script], "string", `apps/web lacks ${script}`);
+  }
+
+  const turboTasks = asRecord(readJson(join(repoRoot, "turbo.json"))["tasks"]);
+  assert.ok("build" in turboTasks, "turbo.json lacks a build task");
+  assert.equal(
+    asRecord(readJson(join(repoRoot, "package.json"))["scripts"])["build"],
+    "turbo run build",
+  );
+  assert.match(
+    readFileSync(join(repoRoot, ".github/workflows/ci.yml"), "utf8"),
+    /run: pnpm check\n\s+- run: pnpm test:e2e\n/,
+  );
+});
+
+test("the pnpm catalog pins TanStack Start, Nitro and Vite to exact versions", () => {
+  const manifest = readFileSync(join(repoRoot, "pnpm-workspace.yaml"), "utf8");
+  for (const name of ["@tanstack/react-start", "@tanstack/react-router", "nitro", "vite"]) {
+    const pattern = new RegExp(`^ {2}"?${name.replace("/", "\\/")}"?: (\\S+)$`, "m");
+    const version = manifest.match(pattern)?.[1];
+    assert.ok(version !== undefined, `catalog lacks ${name}`);
+    assert.match(version, /^\d+\.\d+\.\d+(-[\w.]+)?$/, `${name} is not pinned exactly`);
+  }
+
+  const webManifest = readJson(join(repoRoot, "apps/web/package.json"));
+  const webDependencies = {
+    ...asRecord(webManifest["dependencies"]),
+    ...asRecord(webManifest["devDependencies"]),
+  };
+  for (const name of ["@tanstack/react-start", "nitro", "vite"]) {
+    assert.equal(webDependencies[name], "catalog:", `apps/web must take ${name} from the catalog`);
+  }
+});
+
+test("pnpm test:e2e runs Playwright Test", () => {
+  const scripts = asRecord(readJson(join(repoRoot, "package.json"))["scripts"]);
+  assert.equal(scripts["test:e2e"], "playwright test");
+  assert.match(
+    readFileSync(join(repoRoot, "pnpm-workspace.yaml"), "utf8"),
+    /^ {2}"@playwright\/test": 1\.65\.1$/m,
+  );
+});
+
 function listWorkspaces(): string[] {
   const manifest = readFileSync(join(repoRoot, "pnpm-workspace.yaml"), "utf8");
   const globs = [...manifest.matchAll(/^ {2}- (\S+)$/gm)].map((match) => match[1] ?? "");

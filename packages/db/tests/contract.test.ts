@@ -72,6 +72,49 @@ describe("createDb contract", () => {
     }
   });
 
+  test("savePoliteParticle creates the Learner settings on first save and updates them after", async () => {
+    const db = await createDb({
+      storage: getRxStorageMemory(),
+      name: "streetthai-save-polite-particle-test",
+    });
+
+    try {
+      await db.learnerSettings.preload();
+      expect(db.politeParticle()).toBeUndefined();
+
+      await db.savePoliteParticle("krap");
+      expect(db.politeParticle()).toBe("krap");
+
+      await db.savePoliteParticle("ka");
+      expect(db.politeParticle()).toBe("ka");
+    } finally {
+      await db.close();
+    }
+  });
+
+  test("concurrent first saves settle on the last choice without a duplicate-key failure", async () => {
+    const db = await createDb({
+      storage: getRxStorageMemory(),
+      name: "streetthai-concurrent-save-test",
+    });
+
+    try {
+      await db.learnerSettings.preload();
+
+      await Promise.all([
+        db.savePoliteParticle("krap"),
+        db.savePoliteParticle("ka"),
+        db.savePoliteParticle("krap"),
+        db.savePoliteParticle("ka"),
+      ]);
+
+      expect(db.politeParticle()).toBe("ka");
+      expect(db.learnerSettings.size).toBe(1);
+    } finally {
+      await db.close();
+    }
+  });
+
   test("exposes only the root entry point in package exports", () => {
     expect(manifest.exports).toEqual({ ".": "./index.ts" });
   });
