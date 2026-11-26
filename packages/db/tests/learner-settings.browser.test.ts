@@ -12,7 +12,7 @@ afterEach(async () => {
   await clearTestDatabases(TEST_DB_NAME);
 });
 
-test("TOM-12 target: persists Learner settings across DB close and reopen", async () => {
+test("persists Learner settings across DB close and reopen", async () => {
   const db = await createDb({
     storage: getRxStorageDexie(),
     name: TEST_DB_NAME,
@@ -62,7 +62,16 @@ async function clearTestDatabases(nameFragment: string): Promise<void> {
             () => reject(request.error ?? new Error(`Failed to delete ${name}`)),
             { once: true },
           );
-          request.addEventListener("blocked", () => resolve(), { once: true });
+          request.addEventListener(
+            "blocked",
+            () =>
+              reject(
+                new Error(
+                  `Deletion of IndexedDB database "${name}" was blocked by an open connection`,
+                ),
+              ),
+            { once: true },
+          );
         }),
     ),
   );

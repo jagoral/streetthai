@@ -59,8 +59,11 @@ export async function createDb<TInternals, TInstanceCreationOptions>(
   return {
     learnerSettings,
     async close() {
-      await learnerSettings.cleanup();
-      await rxDatabase.close();
+      try {
+        await learnerSettings.cleanup();
+      } finally {
+        await rxDatabase.close();
+      }
     },
   };
 }

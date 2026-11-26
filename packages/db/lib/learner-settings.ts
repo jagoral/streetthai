@@ -7,7 +7,7 @@ export const LEARNER_SETTINGS_ID = "default" as const;
 /** Allowed polite particle preferences a Learner selects during onboarding. */
 export const politeParticles = ["krap", "ka"] as const;
 
-/** Canonical polite particle preference (`"krap"` for male, `"ka"` for female). */
+/** Canonical Thai polite particle preference selected by the Learner (`"krap"` or `"ka"`). */
 export type PoliteParticle = (typeof politeParticles)[number];
 
 /** Zod schema for the single-document Learner-settings record. */
