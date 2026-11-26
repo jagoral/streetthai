@@ -6,9 +6,11 @@ import {
   useHydrated,
 } from "@tanstack/react-router";
 import type { ReactNode } from "react";
+import type { DbConnection } from "../db/use-street-thai-db.ts";
 
 export type RouterContext = {
   designTokensCss: string;
+  db: DbConnection;
 };
 
 export const Route = createRootRouteWithContext<RouterContext>()({

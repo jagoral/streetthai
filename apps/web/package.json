@@ -12,11 +12,14 @@
     "fmt:check": "oxfmt --check"
   },
   "dependencies": {
+    "@streetthai/db": "workspace:*",
     "@streetthai/ui": "workspace:*",
     "@tanstack/react-router": "catalog:",
     "@tanstack/react-start": "catalog:",
+    "dexie": "catalog:",
     "react": "catalog:",
-    "react-dom": "catalog:"
+    "react-dom": "catalog:",
+    "rxdb": "catalog:"
   },
   "devDependencies": {
     "@streetthai/config": "workspace:*",
@@ -27,6 +30,7 @@
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
     "typescript": "catalog:",
-    "vite": "catalog:"
+    "vite": "catalog:",
+    "vitest": "catalog:"
   }
 }

@@ -18,6 +18,7 @@
       "cache": false
     },
     "//#test:node": {
+      "dependsOn": ["@streetthai/web#build"],
       "cache": false
     },
     "//#test:browser": {
