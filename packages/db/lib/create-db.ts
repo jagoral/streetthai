@@ -2,9 +2,11 @@ import { createCollection, type Collection, type UtilsRecord } from "@tanstack/d
 import { rxdbCollectionOptions } from "@tanstack/rxdb-db-collection";
 import { createRxDatabase, type RxCollection, type RxStorage } from "rxdb";
 import {
+  LEARNER_SETTINGS_ID,
   learnerSettingsRxSchema,
   learnerSettingsSchema,
   type LearnerSettings,
+  type PoliteParticle,
 } from "./learner-settings.ts";
 
 /** TanStack DB collection exposing the single Learner-settings document. */
@@ -28,6 +30,14 @@ export interface CreateDbOptions<TInternals, TInstanceCreationOptions> {
 export interface StreetThaiDb {
   /** TanStack DB collection for the single Learner-settings document. */
   readonly learnerSettings: LearnerSettingsCollection;
+  /** The Learner's saved polite particle, or `undefined` before the first save. */
+  politeParticle(): PoliteParticle | undefined;
+  /**
+   * Saves the Learner's polite particle, creating the Learner-settings document on first save;
+   * storage serializes concurrent saves so the last one wins, and once preloaded,
+   * `learnerSettings` reflects the save when the returned promise resolves.
+   */
+  savePoliteParticle(politeParticle: PoliteParticle): Promise<void>;
   /** Cleans up collection subscriptions and closes the underlying RxDB database. */
   close(): Promise<void>;
 }
@@ -58,6 +68,15 @@ export async function createDb<TInternals, TInstanceCreationOptions>(
 
   return {
     learnerSettings,
+    politeParticle() {
+      return learnerSettings.get(LEARNER_SETTINGS_ID)?.politeParticle;
+    },
+    async savePoliteParticle(politeParticle) {
+      await collections.learner_settings.incrementalUpsert({
+        id: LEARNER_SETTINGS_ID,
+        politeParticle,
+      });
+    },
     async close() {
       try {
         await learnerSettings.cleanup();
