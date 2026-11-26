@@ -1,4 +1,10 @@
-import { HeadContent, Outlet, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
+import {
+  HeadContent,
+  Outlet,
+  Scripts,
+  createRootRouteWithContext,
+  useHydrated,
+} from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
 export type RouterContext = {
@@ -19,8 +25,9 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 });
 
 function RootDocument({ children }: { children: ReactNode }) {
+  const hydrated = useHydrated();
   return (
-    <html lang="en">
+    <html lang="en" data-hydrated={hydrated}>
       <head>
         <HeadContent />
       </head>

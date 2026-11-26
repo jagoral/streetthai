@@ -33,6 +33,35 @@
       "rules": {
         "streetthai/no-bare-error": "off"
       }
+    },
+    {
+      "files": ["e2e/**"],
+      "rules": {
+        "eslint/no-restricted-properties": [
+          "error",
+          {
+            "object": "page",
+            "property": "waitForTimeout",
+            "message": "Wait for a condition, never a fixed timeout."
+          },
+          {
+            "property": "only",
+            "message": "Playwright specs never focus, skip or defer a test."
+          },
+          {
+            "property": "skip",
+            "message": "Playwright specs never focus, skip or defer a test."
+          },
+          {
+            "property": "fixme",
+            "message": "Playwright specs never focus, skip or defer a test."
+          },
+          {
+            "property": "todo",
+            "message": "Playwright specs never focus, skip or defer a test."
+          }
+        ]
+      }
     }
   ]
 }

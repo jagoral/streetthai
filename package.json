@@ -11,9 +11,11 @@
     "fmt:check": "oxfmt --check . '!apps/**' '!packages/**' '!tests/**'",
     "test:node": "vitest run --project node",
     "test:browser": "vitest run --project browser",
+    "test:e2e": "playwright test",
     "product:pull": "node --env-file-if-exists=.env.local tools/product-docs/pull.ts"
   },
   "devDependencies": {
+    "@playwright/test": "catalog:",
     "@streetthai/config": "workspace:*",
     "@types/node": "catalog:",
     "@vitest/browser-playwright": "catalog:",

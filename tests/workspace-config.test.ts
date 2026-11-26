@@ -90,7 +90,7 @@ test("apps/web is a workspace that builds through turbo and CI", () => {
   );
   assert.match(
     readFileSync(join(repoRoot, ".github/workflows/ci.yml"), "utf8"),
-    /run: pnpm check\n\s+- run: pnpm build\n/,
+    /run: pnpm check\n\s+- run: pnpm build\n\s+- run: pnpm test:e2e\n/,
   );
 });
 
@@ -111,6 +111,15 @@ test("the pnpm catalog pins TanStack Start, Nitro and Vite to exact versions", (
   for (const name of ["@tanstack/react-start", "nitro", "vite"]) {
     assert.equal(webDependencies[name], "catalog:", `apps/web must take ${name} from the catalog`);
   }
+});
+
+test("pnpm test:e2e runs Playwright Test", () => {
+  const scripts = asRecord(readJson(join(repoRoot, "package.json"))["scripts"]);
+  assert.equal(scripts["test:e2e"], "playwright test");
+  assert.match(
+    readFileSync(join(repoRoot, "pnpm-workspace.yaml"), "utf8"),
+    /^ {2}"@playwright\/test": 1\.65\.1$/m,
+  );
 });
 
 function listWorkspaces(): string[] {
