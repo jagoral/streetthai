@@ -34,8 +34,10 @@ Load `formal-verify` whenever creating or modifying code behind any row below:
 ```text
 apps/
   web/                # [backlog: apps/web/] TanStack Start PWA
-    app/              # TanStack Start routes & layouts (composition root)
-    components/       # Shared UI components
+    src/
+      router.tsx      # Router factory (composition root)
+      routes/         # TanStack Start file routes
+      components/     # Shared UI components
 packages/
   config/             # Shared tsconfig, OXLint, and OXfmt config (`@streetthai/config`)
   ui/                 # Design tokens and shared UI primitives (`@streetthai/ui`)
@@ -63,7 +65,7 @@ tools/oxlint/         # Custom repo-local lint plugins
 - **Zero flakiness:** keep `retry: 0` in `vitest.config.ts`, `retries: 0` and `forbidOnly: true` in Playwright (`[backlog: playwright.config.ts]`), and ban `.only`, `.skip`, `.todo`, and `page.waitForTimeout` in `packages/config/oxlintrc.json`.
 - **Zero network in tests:** fail any request to a non-localhost origin in Vitest (`tools/vitest/localhost-only-fetch.ts` for `node`, the CSP header in `vitest.config.ts` for `browser`) and Playwright (`[backlog: e2e/network-guard.ts]`); inject fake AI, sync, and payment adapters.
 - **Zero module mocking (`[enforced-by: tools/oxlint/rules/no-vi-mock.ts]`):** ban `vi.mock`, `vi.doMock`, `vi.importMock`, `vi.spyOn`, `vi.stubGlobal`, `vi.stubEnv`, `vi.useFakeTimers`, and `vi.setSystemTime`; pass fakes and adapters through function parameters.
-- **No ambient nondeterminism (`[enforced-by: tools/oxlint/rules/no-ambient-nondeterminism.ts]`):** ban `Date.now`, `Date()`, `new Date()`, `performance.now`, `Temporal.Now`, `Math.random`, `crypto.randomUUID`, and `crypto.getRandomValues` in `packages/**` and `apps/web/components/**`; inject clocks and ID generators from `apps/web/app/**`.
+- **No ambient nondeterminism (`[enforced-by: tools/oxlint/rules/no-ambient-nondeterminism.ts]`):** ban `Date.now`, `Date()`, `new Date()`, `performance.now`, `Temporal.Now`, `Math.random`, `crypto.randomUUID`, and `crypto.getRandomValues` in `packages/**` and `apps/web/src/components/**`; inject clocks and ID generators from the composition root `apps/web/src/router.tsx`.
 - **Strict typing (`[enforced-by: tools/oxlint/rules/strict-typing.ts]`):** keep `strict`, `noUncheckedIndexedAccess`, and `exactOptionalPropertyTypes` in `packages/config/tsconfig.base.json` and `any` and non-null assertions (`x!`) banned in `packages/config/oxlintrc.json`; accept `unknown` only in input parsers (`packages/*/lib/parse/**` or `*.parse.ts`, narrowed with Zod) and `catch` clauses; write no `as` casts, except `as const` or an unavoidable `as` directly below `// SAFETY: <invariant>`.
 - **Zero explanatory comments (`[enforced-by: tools/oxlint/rules/no-explanatory-comments.ts]`):** exempt generated files (`routeTree.gen.ts`); ban lint and TS suppressions (`oxlint-disable`, `@ts-ignore`, `@ts-expect-error`, `@ts-nocheck`); keep only legal headers, public-API doc comments, `// PLATFORM: <link or dep@version>`, `// SAFETY:`, and `// SHORTCUT: <ceiling>; <upgrade trigger>` (`PLATFORM`, `SAFETY`, and `SHORTCUT`: max 2 lines each; replace `TODO`/`FIXME` with `SHORTCUT:` or delete).
 - **Public API first (`[enforced-by: tools/oxlint/rules/member-order.ts]`):** exports before non-exported declarations (except non-exported `const`, `let`, or `class` declarations an exported initializer reads at module load); class members public, protected, private.
@@ -88,7 +90,7 @@ When a higher-priority failure surfaces outside your current task, stop, report 
 
 Skill overrides (`.agents/skills/`):
 
-- `design-taste-frontend` - marketing routes under `apps/web/app/(marketing)/**` (`[backlog: apps/web/app/(marketing)/]`) only, never in-app PWA screens.
+- `design-taste-frontend` - marketing routes under `apps/web/src/routes/_marketing/**` (`[backlog: apps/web/src/routes/_marketing/]`) only, never in-app PWA screens.
 - `break-ui` - include long Thai strings (imported from `src/content/fixtures/` `[backlog: src/content/fixtures/]` into a `*.test.tsx` browser test, never a route or toggle), stacked tone marks/diacritics, empty states, and 360px viewports.
 - `code-review` - fixed point `main` (or the stacked base branch), spec = the Linear issue in `StreetThai`, then its governing chapter (00-05 from the generated `.product-docs/` mirror, 06-09 from `internal-docs/product-vision/`); run on the branch diff before handoff.
 
