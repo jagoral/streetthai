@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "check": "turbo run typecheck lint fmt:check test:node test:browser",
+    "build": "turbo run build",
     "fmt": "turbo run fmt && oxfmt . '!apps/**' '!packages/**' '!tests/**'",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint --deny-warnings --disable-nested-config",

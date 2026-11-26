@@ -7,7 +7,7 @@
 
 ## Context
 
-- **Stack:** Turborepo + pnpm workspace (`apps/*` deployables, `packages/*` shared and domain modules, root `tests/` repo-level tests); every workspace extends `@streetthai/config` (TypeScript, OXLint, OXfmt). One TanStack Start PWA ([ADR-0001](docs/adr/0001-frontend-framework.md)) in `apps/web/` (`[backlog: apps/web/]`, TypeScript on Vercel EU), Vercel AI SDK, build-time compiled Thai G2P Trie, TanStack DB + RxDB + Dexie + Supabase Replication, Paddle.js + RevenueCat.
+- **Stack:** Turborepo + pnpm workspace (`apps/*` deployables, `packages/*` shared and domain modules, root `tests/` repo-level tests); every workspace extends `@streetthai/config` (TypeScript, OXLint, OXfmt). One TanStack Start PWA ([ADR-0001](docs/adr/0001-frontend-framework.md)) in `apps/web/` (TypeScript on Vercel EU), Vercel AI SDK, build-time compiled Thai G2P Trie, TanStack DB + RxDB + Dexie + Supabase Replication, Paddle.js + RevenueCat.
 - **Runtime & commands:** `pnpm`, Node 24 LTS (`.nvmrc`); JDK 17+ for TLC (`[backlog: specs/tla/]`); Python + TLTK for the build-time G2P compiler (`[backlog: scripts/g2p/pyproject.toml]`). Before handoff run `pnpm check` (turbo runs `typecheck`, `lint`, and `fmt:check` in every workspace that defines them in parallel with the root Vitest `test:node` and `test:browser`; `lint:boundaries` `[backlog: .dependency-cruiser.cjs]` joins it later; CI runs it on every PR), `pnpm test:e2e` (`[backlog: script test:e2e]`) when flows change, and any affected `pnpm verify:<area>` (`[backlog: script verify:<area>]`). `pnpm product:pull` reads `LINEAR_API_KEY` (a Linear personal API key) from the environment or a local, gitignored `.env.local` you create at the repo root.
 - **Product source of truth:** business chapters 00-05 (`Product Vision 00 - Overview` through `Product Vision 05 - MVP Build Schedule & Validation Gates`) are Linear documents in project StreetThai, mirrored by `pnpm product:pull` into the generated, gitignored `.product-docs/` folder (index in its `README.md`); read the local mirror, which a SessionStart hook (`.claude/settings.json`) keeps fresh (1h cache, refetch on Linear change); `pnpm product:pull` forces a full refresh (agents without the hook run it manually). Technical chapters 06-09 live in `internal-docs/product-vision/0[6-9]-*`. Ignore the archived `Archive (v13) - *` drafts. A chapter beats the 00 Overview; a newer ADR in `docs/adr/` beats a chapter; ask the owner when two chapters disagree.
 - **Domain language & ADRs:** use canonical terms from [`GLOSSARY.md`](GLOSSARY.md) and proactively correct the owner whenever they use an `_Avoid_` or conflicting term; record every design decision as a concise ADR in `docs/adr/` following `domain-modeling` and `internal-docs`.
@@ -33,7 +33,7 @@ Load `formal-verify` whenever creating or modifying code behind any row below:
 
 ```text
 apps/
-  web/                # [backlog: apps/web/] TanStack Start PWA
+  web/                # TanStack Start PWA (`@streetthai/web`)
     src/
       router.tsx      # Router factory (composition root)
       routes/         # TanStack Start file routes

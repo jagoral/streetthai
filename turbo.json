@@ -9,6 +9,10 @@
       "dependsOn": ["^typecheck"]
     },
     "lint": {},
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": [".output/**"]
+    },
     "fmt:check": {},
     "fmt": {
       "cache": false
