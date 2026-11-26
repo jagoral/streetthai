@@ -4,11 +4,16 @@ packages:
   - tests
 
 catalog:
+  "@tanstack/db": 1.0.0-rc.1.5
+  "@tanstack/rxdb-db-collection": 1.0.0-rc.1.5
   "@types/node": 24.19.4
   "@vitest/browser-playwright": 5.1.2
+  dexie: 4.4.7
   oxfmt: 0.80.0
   oxlint: 1.95.0
   playwright: 1.65.1
+  rxdb: 17.6.0
+  rxjs: 7.8.2
   turbo: 2.11.13
   typescript: 7.0.2
   undici: 7.30.2
